@@ -23,11 +23,12 @@
     --danger:#e64a4a;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;height:100%;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Segoe UI",Roboto,sans-serif;}
+  html,body{margin:0;height:100%;height:100dvh;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Segoe UI",Roboto,sans-serif;overflow:hidden;}
   body{background:#dcdcdc;}
   #app{
     display:flex;
     height:100vh;
+    height:100dvh;
     max-width:1200px;
     margin:0 auto;
     background:#fff;
@@ -222,6 +223,30 @@
   .file-chip .file-name{font-weight:600;word-break:break-all;}
   .file-chip .file-sub{color:#888;font-size:11px;}
 
+  #input-toolbar{
+    background:#f7f7f7;
+    border-top:1px solid var(--border);
+    overflow:hidden;
+    max-height:0;
+    transition:max-height .2s ease;
+  }
+  #input-toolbar.open{max-height:120px;}
+  #input-toolbar-buttons{
+    display:flex;
+    gap:8px;
+    padding:10px 12px 4px;
+  }
+  #attach-btn, #todo-btn{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:8px 14px;
+    font-size:14px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  #attach-btn:hover, #todo-btn:hover{background:#e2e2e2;}
+  #todo-btn.active{background:var(--line-green);color:#fff;border-color:var(--line-green);}
   #input-area{
     background:#fff;
     border-top:1px solid var(--border);
@@ -229,28 +254,21 @@
     display:flex;
     align-items:flex-end;
     gap:8px;
+    flex-shrink:0;
   }
-  #attach-btn{
+  #toolbar-toggle-btn{
     background:#f0f0f0;
     border:none;
     border-radius:50%;
     width:38px;height:38px;
-    font-size:18px;
+    font-size:20px;
     cursor:pointer;
     flex-shrink:0;
+    transition:transform .2s ease, background .2s ease;
+    line-height:1;
   }
-  #attach-btn:hover{background:#e2e2e2;}
-  #todo-btn{
-    background:#f0f0f0;
-    border:none;
-    border-radius:50%;
-    width:38px;height:38px;
-    font-size:16px;
-    cursor:pointer;
-    flex-shrink:0;
-  }
-  #todo-btn:hover{background:#e2e2e2;}
-  #todo-btn.active{background:var(--line-green);}
+  #toolbar-toggle-btn:hover{background:#e2e2e2;}
+  #toolbar-toggle-btn.open{transform:rotate(45deg);background:#e2e2e2;}
   #msg-input{
     flex:1;
     resize:none;
@@ -402,11 +420,16 @@
     </div>
 
     <div id="attach-preview"></div>
-    <div id="var-hint">使える日時変数: {{YYYY-MM-DD}} {{YYYY/MM/DD}} {{HH:mm}}</div>
+    <div id="input-toolbar">
+      <div id="var-hint">使える日時変数: {{YYYY-MM-DD}} {{YYYY/MM/DD}} {{HH:mm}}</div>
+      <div id="input-toolbar-buttons">
+        <button id="attach-btn" title="ファイル添付">📎 添付</button>
+        <input type="file" id="file-input" multiple style="display:none;">
+        <button id="todo-btn" title="Todo形式で先頭に追加">✅️ Todo</button>
+      </div>
+    </div>
     <div id="input-area">
-      <button id="attach-btn" title="ファイル添付">📎</button>
-      <input type="file" id="file-input" multiple style="display:none;">
-      <button id="todo-btn" title="Todo形式で先頭に追加">✅️</button>
+      <button id="toolbar-toggle-btn" title="ツールを表示">＋</button>
       <textarea id="msg-input" rows="1" placeholder="メモを入力... (Shift+Enterで改行)"></textarea>
       <button id="send-btn">送信</button>
     </div>
@@ -1252,6 +1275,14 @@ function initEventListeners() {
     }
   });
   document.getElementById('send-btn').addEventListener('click', sendMessage);
+
+  // ツールバー(アコーディオン)の開閉
+  document.getElementById('toolbar-toggle-btn').addEventListener('click', () => {
+    const toolbar = document.getElementById('input-toolbar');
+    const toggleBtn = document.getElementById('toolbar-toggle-btn');
+    const isOpen = toolbar.classList.toggle('open');
+    toggleBtn.classList.toggle('open', isOpen);
+  });
 
   // ファイル添付
   document.getElementById('attach-btn').addEventListener('click', () => {
