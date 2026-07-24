@@ -21,6 +21,7 @@
     --bubble-file:#ffffff;
     --border:#e0e0e0;
     --danger:#e64a4a;
+    --primary:#06C755;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;height:100dvh;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Segoe UI",Roboto,sans-serif;overflow:hidden;}
@@ -35,165 +36,79 @@
     box-shadow:0 0 20px rgba(0,0,0,.15);
     overflow:hidden;
   }
-  /* ---------- サイドバー(ルーム一覧) ---------- */
+  /* ---------- サイドバー ---------- */
   #sidebar{
-    width:280px;
-    min-width:220px;
-    background:#fff;
-    border-right:1px solid var(--border);
-    display:flex;
-    flex-direction:column;
+    width:280px;min-width:220px;background:#fff;border-right:1px solid var(--border);
+    display:flex;flex-direction:column;
   }
   #sidebar-header{
-    background:var(--line-green);
-    color:#fff;
-    padding:14px 12px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    font-weight:bold;
-    font-size:16px;
+    background:var(--line-green);color:#fff;padding:14px 12px;
+    display:flex;align-items:center;justify-content:space-between;font-weight:bold;font-size:16px;
   }
   #sidebar-header button{
-    background:rgba(255,255,255,.2);
-    border:none;
-    color:#fff;
-    border-radius:6px;
-    padding:6px 10px;
-    cursor:pointer;
-    font-size:13px;
+    background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:6px 10px;
+    cursor:pointer;font-size:13px;
   }
   #sidebar-header button:hover{background:rgba(255,255,255,.35);}
   #room-list{flex:1;overflow-y:auto;}
   .room-item{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 14px;
-    cursor:pointer;
-    border-bottom:1px solid #f0f0f0;
-    position:relative;
+    display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;
+    border-bottom:1px solid #f0f0f0;position:relative;
   }
   .room-item:hover{background:#f7f7f7;}
   .room-item.active{background:#e9f9ee;}
   .room-avatar{
-    width:38px;height:38px;border-radius:50%;
-    background:var(--line-green);
-    color:#fff;display:flex;align-items:center;justify-content:center;
-    font-weight:bold;flex-shrink:0;
+    width:38px;height:38px;border-radius:50%;background:var(--line-green);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;
   }
   .room-info{flex:1;overflow:hidden;}
   .room-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .room-last{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .room-del{
-    background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;padding:4px;
-  }
+  .room-del{background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;padding:4px;}
   .room-del:hover{color:var(--danger);}
-  #sidebar-footer{
-    padding:10px;
-    border-top:1px solid var(--border);
-    display:flex;
-    gap:6px;
-  }
+  #sidebar-footer{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px;}
   #sidebar-footer button{
-    flex:1;
-    padding:8px;
-    border:1px solid var(--border);
-    background:#fafafa;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:12px;
+    flex:1;padding:8px;border:1px solid var(--border);background:#fafafa;border-radius:8px;
+    cursor:pointer;font-size:12px;
   }
   #sidebar-footer button:hover{background:#eee;}
-
-  /* ---------- メインチャット領域 ---------- */
+  /* ---------- メイン ---------- */
   #main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-room);}
   #chat-header{
-    background:#fff;
-    border-bottom:1px solid var(--border);
-    padding:12px 16px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
+    background:#fff;border-bottom:1px solid var(--border);padding:12px 16px;
+    display:flex;align-items:center;justify-content:space-between;
   }
   #chat-title{font-weight:bold;font-size:16px;cursor:pointer;}
   #chat-title:hover{text-decoration:underline;}
   #chat-actions{display:flex;gap:8px;}
   #chat-actions button{
-    border:1px solid var(--border);
-    background:#fff;
-    border-radius:8px;
-    padding:6px 10px;
-    cursor:pointer;
-    font-size:12px;
+    border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 10px;
+    cursor:pointer;font-size:12px;
   }
   #chat-actions button:hover{background:#f2f2f2;}
   #chat-actions button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
   #chat-actions button.primary:hover{background:var(--line-green-dark);}
-
-  #messages{
-    flex:1;
-    overflow-y:auto;
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .date-sep{
-    text-align:center;
-    color:#999;
-    font-size:12px;
-    margin:14px 0 6px;
-  }
+  #messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px;}
+  .date-sep{text-align:center;color:#999;font-size:12px;margin:14px 0 6px;}
   .msg-row{
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:2px;
-    max-width:78%;
-    align-self:flex-end;
-    position:relative;
-    width:fit-content;
+    display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:78%;
+    align-self:flex-end;position:relative;width:fit-content;
   }
   .msg-row.selecting{cursor:pointer;}
-  .msg-row-top{
-    display:flex;
-    align-items:flex-start;
-    gap:8px;
-    width:100%;
-  }
-  .msg-checkbox{
-    width:18px;height:18px;margin-top:8px;flex-shrink:0;accent-color:var(--line-green);
-  }
+  .msg-row-top{display:flex;align-items:flex-start;gap:8px;width:100%;}
+  .msg-checkbox{width:18px;height:18px;margin-top:8px;flex-shrink:0;accent-color:var(--line-green);}
   .msg-bubble-wrap{display:flex;flex-direction:column;align-items:flex-end;flex:1;min-width:0;}
   .msg-bubble{
-    background:var(--bubble-me);
-    padding:9px 12px;
-    border-radius:14px 14px 2px 14px;
-    font-size:14px;
-    line-height:1.5;
-    white-space:pre-wrap;
-    word-break:break-word;
-    max-width:100%;
+    background:var(--bubble-me);padding:9px 12px;border-radius:14px 14px 2px 14px;font-size:14px;
+    line-height:1.5;white-space:pre-wrap;word-break:break-word;max-width:100%;
     box-shadow:0 1px 1px rgba(0,0,0,.05);
   }
   .msg-bubble.file-msg{background:var(--bubble-file);border:1px solid var(--border);}
   .msg-row.selected .msg-bubble{outline:2px solid var(--line-green);}
   .msg-time{font-size:11px;color:#999;margin-top:3px;}
-  .msg-actions{
-    display:flex;
-    gap:4px;
-    justify-content:flex-end;
-    opacity:0;
-    transition:opacity .15s;
-    height:0;
-    overflow:hidden;
-  }
+  .msg-actions{display:flex;gap:4px;justify-content:flex-end;opacity:0;transition:opacity .15s;height:0;overflow:hidden;}
   .msg-row:hover .msg-actions{opacity:1;height:auto;overflow:visible;}
-  .msg-delete-btn, .msg-edit-btn, .msg-copy-btn{
-    background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
-    padding:4px 6px;
-  }
+  .msg-delete-btn, .msg-edit-btn, .msg-copy-btn{background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;padding:4px 6px;}
   .msg-delete-btn:hover{color:var(--danger);}
   .msg-edit-btn:hover{color:var(--primary);}
   .msg-copy-btn:hover{color:var(--line-green);}
@@ -217,139 +132,90 @@
   .msg-img{max-width:220px;border-radius:10px;display:block;margin-top:4px;cursor:pointer;}
   .file-chip{
     display:flex;align-items:center;gap:8px;
-    background:#f6f6f6;border-radius:10px;padding:8px 10px;margin-top:4px;
-    font-size:13px;
+    background:#f6f6f6;border-radius:10px;padding:8px 10px;margin-top:4px;font-size:13px;
   }
   .file-chip .file-icon{font-size:20px;}
   .file-chip .file-meta{display:flex;flex-direction:column;}
   .file-chip .file-name{font-weight:600;word-break:break-all;}
   .file-chip .file-sub{color:#888;font-size:11px;}
-
   #input-toolbar{
-    background:#f7f7f7;
-    border-top:1px solid var(--border);
-    overflow:hidden;
-    max-height:0;
+    background:#f7f7f7;border-top:1px solid var(--border);overflow:hidden;max-height:0;
     transition:max-height .2s ease;
   }
   #input-toolbar.open{max-height:120px;}
-  #input-toolbar-buttons{
-    display:flex;
-    gap:8px;
-    padding:10px 12px 4px;
-  }
+  #input-toolbar-buttons{display:flex;gap:8px;padding:10px 12px 4px;}
   #attach-btn, #todo-btn{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:8px 14px;
-    font-size:14px;
-    cursor:pointer;
-    flex-shrink:0;
+    background:#fff;border:1px solid var(--border);border-radius:18px;padding:8px 14px;
+    font-size:14px;cursor:pointer;flex-shrink:0;
   }
   #attach-btn:hover, #todo-btn:hover{background:#e2e2e2;}
   #todo-btn.active{background:var(--line-green);color:#fff;border-color:var(--line-green);}
   #input-area{
-    background:#fff;
-    border-top:1px solid var(--border);
-    padding:10px 12px;
-    display:flex;
-    align-items:flex-end;
-    gap:8px;
-    flex-shrink:0;
+    background:#fff;border-top:1px solid var(--border);padding:10px 12px;
+    display:flex;align-items:flex-end;gap:8px;flex-shrink:0;
   }
   #toolbar-toggle-btn{
-    background:#f0f0f0;
-    border:none;
-    border-radius:50%;
-    width:38px;height:38px;
-    font-size:20px;
-    cursor:pointer;
-    flex-shrink:0;
-    transition:transform .2s ease, background .2s ease;
-    line-height:1;
+    background:#f0f0f0;border:none;border-radius:50%;width:38px;height:38px;font-size:20px;
+    cursor:pointer;flex-shrink:0;transition:transform .2s ease, background .2s ease;line-height:1;
   }
   #toolbar-toggle-btn:hover{background:#e2e2e2;}
   #toolbar-toggle-btn.open{transform:rotate(45deg);background:#e2e2e2;}
   #msg-input{
-    flex:1;
-    resize:none;
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:9px 14px;
-    font-size:14px;
-    max-height:120px;
-    line-height:1.4;
-    font-family:inherit;
+    flex:1;resize:none;border:1px solid var(--border);border-radius:18px;padding:9px 14px;
+    font-size:14px;max-height:120px;line-height:1.4;font-family:inherit;
   }
   #send-btn{
-    background:var(--line-green);
-    color:#fff;
-    border:none;
-    border-radius:18px;
-    padding:9px 16px;
-    font-size:14px;
-    cursor:pointer;
-    flex-shrink:0;
+    background:var(--line-green);color:#fff;border:none;border-radius:18px;padding:9px 16px;
+    font-size:14px;cursor:pointer;flex-shrink:0;
   }
   #send-btn:hover{background:var(--line-green-dark);}
   #send-btn:disabled{background:#ccc;cursor:not-allowed;}
-  #attach-preview{
-    display:flex;gap:6px;padding:0 12px;flex-wrap:wrap;
-  }
+  #attach-preview{display:flex;gap:6px;padding:0 12px;flex-wrap:wrap;}
   #attach-preview .pending-file{
     background:#f0f0f0;border-radius:8px;padding:4px 8px;font-size:12px;
     display:flex;align-items:center;gap:6px;
   }
   #attach-preview .pending-file button{border:none;background:none;cursor:pointer;color:#e64a4a;font-weight:bold;}
   #var-hint{font-size:11px;color:#999;padding:2px 14px;}
-
-  /* 選択モードバー */
   #selection-bar{
-    display:none;
-    background:#fff9d9;
-    border-top:1px solid #eadf9a;
-    padding:8px 14px;
-    align-items:center;
-    justify-content:space-between;
-    font-size:13px;
+    display:none;background:#fff9d9;border-top:1px solid #eadf9a;padding:8px 14px;
+    align-items:center;justify-content:space-between;font-size:13px;
   }
   #selection-bar.active{display:flex;}
   #selection-bar .sel-actions{display:flex;gap:8px;}
   #selection-bar button{
-    border:1px solid var(--border);
-    background:#fff;
-    border-radius:6px;
-    padding:5px 10px;
-    cursor:pointer;
-    font-size:12px;
+    border:1px solid var(--border);background:#fff;border-radius:6px;padding:5px 10px;
+    cursor:pointer;font-size:12px;
   }
   #selection-bar button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
   #selection-bar button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
-
-  /* ---------- モーダル共通 ---------- */
+  /* ---------- モーダル ---------- */
   .modal-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.4);
-    display:none;align-items:center;justify-content:center;z-index:100;
+    position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;
+    justify-content:center;z-index:100;
   }
   .modal-overlay.active{display:flex;}
   .modal-box{
-    background:#fff;border-radius:12px;width:90%;max-width:480px;
-    max-height:85vh;display:flex;flex-direction:column;overflow:hidden;
+    background:#fff;border-radius:12px;width:90%;max-width:480px;max-height:85vh;
+    display:flex;flex-direction:column;overflow:hidden;
   }
   .modal-header{
-    padding:14px 16px;border-bottom:1px solid var(--border);
-    display:flex;justify-content:space-between;align-items:center;font-weight:bold;
+    padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;
+    align-items:center;font-weight:bold;
   }
   .modal-header button{border:none;background:none;font-size:18px;cursor:pointer;color:#888;}
   .modal-body{padding:16px;overflow-y:auto;flex:1;}
-  .modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+  .modal-footer{
+    padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;
+  }
   .modal-footer button{
-    padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;
+    padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;
+    font-size:13px;
   }
   .modal-footer button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
-  .modal-body input[type=text], .modal-body select{
-    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-top:4px;
+  .modal-body input[type="text"], .modal-body select{
+    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;
+    margin-top:4px;
   }
   .modal-body label{font-size:13px;color:#555;font-weight:600;display:block;margin-bottom:4px;margin-top:10px;}
   #yaml-textarea{
@@ -364,17 +230,16 @@
   }
   .radio-group{display:flex;gap:14px;font-size:13px;margin-top:6px;}
   .toast{
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;
-    z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;
+    padding:10px 18px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;
+    pointer-events:none;
   }
   .toast.show{opacity:1;}
-
   @media (max-width:768px){
     #app{max-width:100%;box-shadow:none;}
     #sidebar{
-      position:absolute;left:0;top:0;bottom:0;z-index:50;
-      transform:translateX(-100%);transition:transform .25s;width:80%;max-width:300px;
+      position:absolute;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);
+      transition:transform .25s;width:80%;max-width:300px;
     }
     #sidebar.open{transform:translateX(0);}
     #menu-btn{display:inline-block !important;}
@@ -385,12 +250,11 @@
 </head>
 <body>
 <div id="app">
-
-  <!-- ===== サイドバー: チャットルーム一覧 ===== -->
+  <!-- ===== サイドバー ===== -->
   <div id="sidebar">
     <div id="sidebar-header">
       <span>チャット一覧</span>
-      <button id="new-room-btn" title="新規ルーム作成">＋ ルーム</button>
+      <button id="new-room-btn" title="新規ルーム">＋ ルーム</button>
     </div>
     <div id="room-list"></div>
     <div id="sidebar-footer">
@@ -398,7 +262,7 @@
     </div>
   </div>
 
-  <!-- ===== メイン: チャット表示 ===== -->
+  <!-- ===== メイン ===== -->
   <div id="main">
     <div id="chat-header">
       <div style="display:flex;align-items:center;">
@@ -411,9 +275,7 @@
         <button id="bulk-delete-btn" title="一括削除">🗑</button>
       </div>
     </div>
-
     <div id="messages"></div>
-
     <div id="selection-bar">
       <span id="selection-count">0件選択中</span>
       <div class="sel-actions">
@@ -422,18 +284,17 @@
         <button id="sel-cancel-btn">キャンセル</button>
       </div>
     </div>
-
     <div id="attach-preview"></div>
     <div id="input-toolbar">
       <div id="var-hint">使える日時変数: {{YYYY-MM-DD}} {{YYYY/MM/DD}} {{HH:mm}}</div>
       <div id="input-toolbar-buttons">
-        <button id="attach-btn" title="ファイル添付">📎 添付</button>
+        <button id="attach-btn" title="添付">📎 添付</button>
         <input type="file" id="file-input" multiple style="display:none;">
-        <button id="todo-btn" title="Todo形式で先頭に追加">✅️ Todo</button>
+        <button id="todo-btn" title="Todo">✅️ Todo</button>
       </div>
     </div>
     <div id="input-area">
-      <button id="toolbar-toggle-btn" title="ツールを表示">＋</button>
+      <button id="toolbar-toggle-btn" title="ツールバー">＋</button>
       <textarea id="msg-input" rows="1" placeholder="メモを入力... (Shift+Enterで送信)"></textarea>
       <button id="send-btn">送信</button>
     </div>
@@ -446,7 +307,7 @@
     <div class="modal-header"><span>新しいチャットルーム</span><button class="close-x" data-close="modal-new-room">×</button></div>
     <div class="modal-body">
       <label>ルーム名</label>
-      <input type="text" id="new-room-name" placeholder="例: 買い物メモ">
+      <input type="text" id="new-room-name">
     </div>
     <div class="modal-footer">
       <button data-close="modal-new-room">キャンセル</button>
@@ -475,7 +336,7 @@
   <div class="modal-box">
     <div class="modal-header"><span>メッセージの一括削除</span><button class="close-x" data-close="modal-bulk-delete">×</button></div>
     <div class="modal-body">
-      <p style="font-size:13px;color:555;margin-top:0;">削除方法を選んでください。この操作は取り消せません。</p>
+      <p style="font-size:13px;color:#555;margin-top:0;">削除方法を選んでください。この操作は取り消せません。</p>
       <div style="display:flex;flex-direction:column;gap:8px;">
         <button id="bulk-delete-all-btn" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;text-align:left;">🗑 このルームの全メッセージを削除</button>
         <button id="bulk-delete-before-today-btn" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;text-align:left;">🗑 今日より前のメッセージを削除</button>
@@ -487,7 +348,7 @@
   </div>
 </div>
 
-<!-- ===== モーダル: YAML設定 ===== -->
+<!-- ===== モーダル: YAML ===== -->
 <div class="modal-overlay" id="modal-yaml">
   <div class="modal-box" style="max-width:560px;">
     <div class="modal-header"><span>YAML設定</span><button class="close-x" data-close="modal-yaml">×</button></div>
@@ -518,7 +379,7 @@
   </div>
 </div>
 
-<!-- ===== モーダル: 画像拡大 ===== -->
+<!-- ===== モーダル: 画像プレビュー ===== -->
 <div class="modal-overlay" id="modal-image">
   <div class="modal-box" style="max-width:90%;background:transparent;box-shadow:none;">
     <div class="modal-header" style="background:#fff;"><span>プレビュー</span><button class="close-x" data-close="modal-image">×</button></div>
@@ -531,155 +392,152 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* =========================================================================
-   LINE風メモアプリ  - 単一HTMLで完結する保守しやすい構成
-   構成:
-     1. ストレージ層 (Storage)       : localStorage への安全な読み書き
-     2. 状態管理層 (State)           : アプリ全体の状態を保持
-     3. ユーティリティ (Utils)       : 日付処理・簡易YAML・ファイル処理
-     4. レンダリング層 (Render)      : DOM描画
-     5. イベントハンドラ層 (Handlers): ユーザー操作の処理
-     6. 初期化 (Init)
-   ========================================================================= */
+/* ==============================================================
+   LINE風メモ - HTML単体アプリ
+   1. Storage層
+   2. State
+   3. Utils・YAML
+   4. Render（DOM描画）
+   5. イベントハンドラ
+   6. Init
+================================================================== */
 
-/* ------------------------------------------------------------------ *
- * 1. ストレージ層
- * ------------------------------------------------------------------ */
-const STORAGE_KEY = 'lineMemoApp_data_v1';
-const STORAGE_KEY_BACKUP = 'lineMemoApp_data_v1_backup';
+/* ------------------------------------------------------------------
+   1. Storage層
+------------------------------------------------------------------ */
+const STORAGE_KEY = 'lineMemoAppData_v1';
+const STORAGE_KEY_BACKUP = 'lineMemoAppData_v1_backup';
 
 const Storage = {
-  /**
-   * state を安全に保存する。保存直前のバックアップも保持し、
-   * 次回読み込み時に壊れたデータを検知したらバックアップから復元できるようにする。
-   */
-  save(state) {
-    try {
+  save(state){
+    try{
       const json = JSON.stringify(state);
-      // 直前の正常データをバックアップとして退避
       const prev = localStorage.getItem(STORAGE_KEY);
-      if (prev) localStorage.setItem(STORAGE_KEY_BACKUP, prev);
+      if(prev) localStorage.setItem(STORAGE_KEY_BACKUP, prev);
       localStorage.setItem(STORAGE_KEY, json);
       return true;
-    } catch (e) {
-      console.error('保存に失敗しました', e);
-      Utils.toast('保存に失敗しました（容量制限の可能性があります）');
+    }catch(e){
+      console.error(e);
+      Utils.toast('保存に失敗しました');
       return false;
     }
   },
-
-  /**
-   * state を読み込む。壊れている場合はバックアップ、
-   * それも失敗したら初期状態を返す。
-   */
-  load() {
+  load(){
     const tryParse = (raw) => {
-      if (!raw) return null;
-      try {
+      if(!raw) return null;
+      try{
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.rooms)) {
-          return parsed;
-        }
+        if(parsed && typeof parsed === 'object' && Array.isArray(parsed.rooms)) return parsed;
         return null;
-      } catch (e) {
-        return null;
-      }
+      }catch(e){ return null; }
     };
     let data = tryParse(localStorage.getItem(STORAGE_KEY));
-    if (!data) {
+    if(!data){
       data = tryParse(localStorage.getItem(STORAGE_KEY_BACKUP));
-      if (data) Utils.toast('保存データの一部が壊れていたためバックアップから復元しました');
+      if(data) Utils.toast('バックアップからデータを復元しました');
     }
-    if (!data) {
-      data = null; // 呼び出し側で初期状態を生成
-    }
+    if(!data) data = null;
     return data;
   }
 };
 
-/* ------------------------------------------------------------------ *
- * 3. ユーティリティ
- * ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------
+   2. State
+------------------------------------------------------------------ */
+function createDefaultState(){
+  const now = Date.now();
+  const defaultRoomId = Utils.uid();
+  return {
+    rooms: [{ id: defaultRoomId, name: 'デフォルトルーム', createdAt: now }],
+    messagesByRoom: { [defaultRoomId]: [] },
+    currentRoomId: defaultRoomId,
+    yamlText: DEFAULT_YAML
+  };
+}
+
+let state = Storage.load() || createDefaultState();
+
+function ensureIntegrity(){
+  if(!Array.isArray(state.rooms) || state.rooms.length === 0){
+    state = createDefaultState();
+  }
+  if(!state.messagesByRoom || typeof state.messagesByRoom !== 'object') state.messagesByRoom = {};
+  state.rooms.forEach(r => {
+    if(!Array.isArray(state.messagesByRoom[r.id])) state.messagesByRoom[r.id] = [];
+  });
+  if(!state.rooms.find(r => r.id === state.currentRoomId)){
+    state.currentRoomId = state.rooms[0].id;
+  }
+  if(typeof state.yamlText !== 'string') state.yamlText = DEFAULT_YAML;
+}
+
+let yamlConfig = {};
+let selectionMode = false;
+let selectedIds = new Set();
+let pendingAttachments = [];
+
+function persist(){ Storage.save(state); }
+
+/* ------------------------------------------------------------------
+   3. Utils・YAML
+------------------------------------------------------------------ */
 const Utils = {
-  uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  },
-
-  pad(n) { return n.toString().padStart(2, '0'); },
-
-  /** 日時変数を実際の値へ展開する ({{YYYY-MM-DD}} 等) */
-  expandDateVariables(text) {
+  uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); },
+  pad(n){ return n.toString().padStart(2, '0'); },
+  expandDateVariables(text){
     const d = new Date();
-    const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
+    const y = d.getFullYear(), m = Utils.pad(d.getMonth()+1), day = Utils.pad(d.getDate());
     const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
     return text
-      .replace(/\{\{\s*YYYY-MM-DD\s*\}\}/g, `${y}-${m}-${day}`)
-      .replace(/\{\{\s*YYYY\/MM\/DD\s*\}\}/g, `${y}/${m}/${day}`)
-      .replace(/\{\{\s*HH:mm\s*\}\}/g, `${hh}:${mm}`);
+      .replace(/\{\{YYYY-MM-DD\}\}/g, `${y}-${m}-${day}`)
+      .replace(/\{\{YYYY\/MM\/DD\}\}/g, `${y}/${m}/${day}`)
+      .replace(/\{\{HH:mm\}\}/g, `${hh}:${mm}`);
   },
-
-  /** YAMLフロントマター用: リテラルの日付/時刻トークン(YYYY-MM-DD, YYYY/MM/DD, HH:mm)を実際の値へ変換する */
-  expandFrontmatterDateTokens(text) {
+  expandFrontmatterDateTokens(text){
     const d = new Date();
-    const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
+    const y = d.getFullYear(), m = Utils.pad(d.getMonth()+1), day = Utils.pad(d.getDate());
     const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
     return text
-      .replace(/YYYY\/MM\/DD/g, `${y}/${m}/${day}`)
+      .replace(/YYYYMMDD/g, `${y}${m}${day}`)
       .replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`)
       .replace(/HH:mm/g, `${hh}:${mm}`);
   },
-
-  formatDate(timestamp, pattern) {
+  formatDate(timestamp, pattern){
     const d = new Date(timestamp);
-    const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
-    const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
-    if (pattern === 'YYYY/MM/DD') return `${y}/${m}/${day}`;
-    return `${y}-${m}-${day}`; // デフォルト YYYY-MM-DD
+    const y = d.getFullYear(), m = Utils.pad(d.getMonth()+1), day = Utils.pad(d.getDate());
+    if(pattern === 'YYYYMMDD') return `${y}${m}${day}`;
+    return `${y}-${m}-${day}`;
   },
-  formatTime(timestamp) {
+  formatTime(timestamp){
     const d = new Date(timestamp);
     return `${Utils.pad(d.getHours())}:${Utils.pad(d.getMinutes())}`;
   },
-
-  formatBytes(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  formatBytes(bytes){
+    if(bytes < 1024) return bytes + ' B';
+    if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/1024/1024).toFixed(1) + ' MB';
   },
-
-  escapeHtml(str) {
+  escapeHtml(str){
     return String(str)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   },
-
-  toast(message) {
+  toastTimer: null,
+  toast(message){
     const el = document.getElementById('toast');
     el.textContent = message;
     el.classList.add('show');
-    clearTimeout(Utils._toastTimer);
-    Utils._toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+    clearTimeout(Utils.toastTimer);
+    Utils.toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
   },
-
-  /**
-   * YAML全般をサポートする本格パーサー。js-yaml(CDN読込)を利用し、
-   * ネスト・配列・複数行文字列・コメント・アンカー等の標準YAML構文を自由に記述できるようにする。
-   * js-yamlが読み込めない場合(オフライン等)はエラーとして分かりやすく通知し、アプリは落とさない。
-   */
-  parseSimpleYAML(text) {
-    if (typeof jsyaml === 'undefined') {
-      throw new Error('YAMLパーサーライブラリの読み込みに失敗しました（オフラインの可能性があります）。ページを再読み込みしてください。');
-    }
+  parseSimpleYAML(text){
+    if(typeof jsyaml === 'undefined') throw new Error('YAMLライブラリが読み込まれていません');
     const result = jsyaml.load(text);
-    if (result === undefined || result === null) return {};
-    if (typeof result !== 'object' || Array.isArray(result)) {
-      throw new Error('YAMLのトップレベルは key: value 形式のオブジェクトである必要があります。');
-    }
+    if(result === undefined || result === null) return {};
+    if(typeof result !== 'object' || Array.isArray(result)) throw new Error('YAMLはkey: value形式で記述してください');
     return result;
   },
-
-  /** File を dataURL として読み込む(画像プレビュー用) */
-  readFileAsDataURL(file) {
+  readFileAsDataURL(file){
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -689,75 +547,24 @@ const Utils = {
   }
 };
 
-
-/* ------------------------------------------------------------------ *
- * 2. 状態管理層
- * ------------------------------------------------------------------ */
 const DEFAULT_YAML = `display:
   showTimestamp: true
   dateFormat: "YYYY-MM-DD"
   timeFormat: "HH:mm"
-format:
-  bubbleStyle: "rounded"
+  bubbleStyle: rounded
 export:
   includeRoomName: true
   includeExportDate: true
-  header: "# メモエクスポート"
 `;
 
-function createDefaultState() {
-  const now = Date.now();
-  const defaultRoomId = Utils.uid();
-  return {
-    rooms: [
-      { id: defaultRoomId, name: 'デフォルトルーム', createdAt: now }
-    ],
-    messagesByRoom: {
-      [defaultRoomId]: []
-    },
-    currentRoomId: defaultRoomId,
-    yamlText: DEFAULT_YAML
-  };
-}
-
-let state = Storage.load() || createDefaultState();
-// 念のため整合性チェック（ルームが1件も無い/現在ルームが存在しない等）
-(function ensureIntegrity() {
-  if (!Array.isArray(state.rooms) || state.rooms.length === 0) {
-    state = createDefaultState();
-  }
-  if (!state.messagesByRoom || typeof state.messagesByRoom !== 'object') {
-    state.messagesByRoom = {};
-  }
-  state.rooms.forEach(r => {
-    if (!Array.isArray(state.messagesByRoom[r.id])) state.messagesByRoom[r.id] = [];
-  });
-  if (!state.rooms.find(r => r.id === state.currentRoomId)) {
-    state.currentRoomId = state.rooms[0].id;
-  }
-  if (typeof state.yamlText !== 'string') state.yamlText = DEFAULT_YAML;
-})();
-
-let yamlConfig = {};
-let selectionMode = false;
-let selectedIds = new Set();
-let pendingAttachments = []; // 送信待ちの添付ファイル
-
-function persist() {
-  Storage.save(state);
-}
-
-/* ------------------------------------------------------------------ *
- * YAML設定の適用
- * ------------------------------------------------------------------ */
-function applyYamlConfig() {
-  try {
+function applyYamlConfig(){
+  try{
     const parsed = Utils.parseSimpleYAML(state.yamlText);
-    yamlConfig = parsed || {};
+    yamlConfig = parsed;
     document.getElementById('yaml-error').classList.remove('show');
     return true;
-  } catch (e) {
-    yamlConfig = yamlConfig || {}; // 直前の設定を維持し、アプリを落とさない
+  }catch(e){
+    yamlConfig = yamlConfig || {};
     const errEl = document.getElementById('yaml-error');
     errEl.textContent = 'YAMLエラー: ' + e.message;
     errEl.classList.add('show');
@@ -765,20 +572,20 @@ function applyYamlConfig() {
   }
 }
 
-function getYamlSetting(path, fallback) {
+function getYamlSetting(path, fallback){
   const parts = path.split('.');
   let cur = yamlConfig;
-  for (const p of parts) {
-    if (cur && typeof cur === 'object' && p in cur) cur = cur[p];
+  for(const p of parts){
+    if(cur && typeof cur === 'object' && p in cur) cur = cur[p];
     else return fallback;
   }
   return cur === undefined ? fallback : cur;
 }
 
-/* ------------------------------------------------------------------ *
- * 4. レンダリング層
- * ------------------------------------------------------------------ */
-function renderRooms() {
+/* ------------------------------------------------------------------
+   4. Render（DOM描画）
+------------------------------------------------------------------ */
+function renderRooms(){
   const listEl = document.getElementById('room-list');
   listEl.innerHTML = '';
   state.rooms.forEach(room => {
@@ -790,12 +597,12 @@ function renderRooms() {
       <div class="room-avatar">${Utils.escapeHtml(room.name.slice(0,1) || '?')}</div>
       <div class="room-info">
         <div class="room-name">${Utils.escapeHtml(room.name)}</div>
-        <div class="room-last">${last ? Utils.escapeHtml(previewText(last)) : 'まだメモがありません'}</div>
+        <div class="room-last">${last ? Utils.escapeHtml(previewText(last)) : ''}</div>
       </div>
-      <button class="room-del" data-room-id="${room.id}" title="ルーム削除">🗑</button>
+      <button class="room-del" data-room-id="${room.id}" title="削除">🗑</button>
     `;
     item.addEventListener('click', (e) => {
-      if (e.target.closest('.room-del')) return;
+      if(e.target.closest('.room-del')) return;
       switchRoom(room.id);
     });
     item.querySelector('.room-del').addEventListener('click', (e) => {
@@ -806,13 +613,13 @@ function renderRooms() {
   });
 }
 
-function previewText(msg) {
-  if (msg.text) return msg.text.slice(0, 20);
-  if (msg.attachments && msg.attachments.length) return '📎 ' + msg.attachments[0].name;
+function previewText(msg){
+  if(msg.text) return msg.text.slice(0, 20);
+  if(msg.attachments && msg.attachments.length) return '📎 ' + msg.attachments[0].name;
   return '';
 }
 
-function renderMessages() {
+function renderMessages(){
   const box = document.getElementById('messages');
   box.innerHTML = '';
   const msgs = state.messagesByRoom[state.currentRoomId] || [];
@@ -822,7 +629,7 @@ function renderMessages() {
   let lastDateLabel = null;
   msgs.forEach(msg => {
     const dateLabel = Utils.formatDate(msg.createdAt, dateFormat);
-    if (dateLabel !== lastDateLabel) {
+    if(dateLabel !== lastDateLabel){
       const sep = document.createElement('div');
       sep.className = 'date-sep';
       sep.textContent = dateLabel;
@@ -834,13 +641,14 @@ function renderMessages() {
   box.scrollTop = box.scrollHeight;
 }
 
-function renderMessageRow(msg, showTimestamp) {
+function renderMessageRow(msg, showTimestamp){
   const row = document.createElement('div');
   row.className = 'msg-row' + (selectionMode ? ' selecting' : '') + (selectedIds.has(msg.id) ? ' selected' : '');
   row.dataset.id = msg.id;
+  row.dataset.msgId = msg.id;
 
   let checkboxHtml = '';
-  if (selectionMode) {
+  if(selectionMode){
     checkboxHtml = `<input type="checkbox" class="msg-checkbox" ${selectedIds.has(msg.id) ? 'checked' : ''}>`;
   }
 
@@ -848,22 +656,20 @@ function renderMessageRow(msg, showTimestamp) {
   bubbleWrap.className = 'msg-bubble-wrap';
 
   const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble' + (!msg.text && msg.attachments && msg.attachments.length ? ' file-msg' : '');
+  bubble.className = 'msg-bubble' + ((!msg.text && msg.attachments && msg.attachments.length) ? ' file-msg' : '');
 
   let innerHtml = '';
-  if (msg.text) {
-    innerHtml += `<div>${Utils.escapeHtml(msg.text)}</div>`;
-  }
+  if(msg.text) innerHtml += `<div>${Utils.escapeHtml(msg.text)}</div>`;
   (msg.attachments || []).forEach(att => {
-    if (att.isImage && att.dataUrl) {
+    if(att.isImage && att.dataUrl){
       innerHtml += `<img class="msg-img" src="${att.dataUrl}" alt="${Utils.escapeHtml(att.name)}">`;
-    } else {
+    }else{
       innerHtml += `
         <div class="file-chip">
           <div class="file-icon">📄</div>
           <div class="file-meta">
             <div class="file-name">${Utils.escapeHtml(att.name)}</div>
-            <div class="file-sub">${Utils.escapeHtml(att.type || '不明な形式')} ・ ${Utils.formatBytes(att.size)}</div>
+            <div class="file-sub">${Utils.escapeHtml(att.type)} ・ ${Utils.formatBytes(att.size)}</div>
           </div>
         </div>`;
     }
@@ -871,7 +677,7 @@ function renderMessageRow(msg, showTimestamp) {
   bubble.innerHTML = innerHtml;
   bubbleWrap.appendChild(bubble);
 
-  if (showTimestamp) {
+  if(showTimestamp){
     const timeEl = document.createElement('div');
     timeEl.className = 'msg-time';
     timeEl.textContent = Utils.formatTime(msg.createdAt) + (msg.editedAt ? '（編集済み）' : '');
@@ -884,47 +690,32 @@ function renderMessageRow(msg, showTimestamp) {
   topRow.appendChild(bubbleWrap);
   row.appendChild(topRow);
 
-  // コピー・編集・削除ボタン（吹き出しの下に配置。選択モード中は非表示、ホバー時のみ表示）
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'msg-actions';
-
-  if (msg.text) {
+  if(msg.text){
     const copyBtn = document.createElement('button');
     copyBtn.className = 'msg-copy-btn';
-    copyBtn.title = 'このメッセージをコピー';
+    copyBtn.title = 'コピー';
     copyBtn.textContent = '📋';
-    copyBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      copyMessageText(msg.text);
-    });
+    copyBtn.addEventListener('click', (e) => { e.stopPropagation(); copyMessageText(msg.text); });
     actionsWrap.appendChild(copyBtn);
   }
-
-  if (msg.text || (msg.attachments && msg.attachments.length === 0)) {
+  if(msg.text && !(msg.attachments && msg.attachments.length > 0)){
     const editBtn = document.createElement('button');
     editBtn.className = 'msg-edit-btn';
-    editBtn.title = 'このメッセージを編集';
+    editBtn.title = '編集';
     editBtn.textContent = '✏️';
-    editBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      startEditMessage(msg.id, bubble, bubbleWrap);
-    });
+    editBtn.addEventListener('click', (e) => { e.stopPropagation(); startEditMessage(msg.id, bubble, bubbleWrap); });
     actionsWrap.appendChild(editBtn);
   }
-
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'msg-delete-btn';
-  deleteBtn.title = 'このメッセージを削除';
+  deleteBtn.title = '削除';
   deleteBtn.textContent = '🗑';
-  deleteBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    deleteMessage(msg.id);
-  });
+  deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteMessage(msg.id); });
   actionsWrap.appendChild(deleteBtn);
-
   row.appendChild(actionsWrap);
 
-  // 画像クリックで拡大表示
   row.querySelectorAll('.msg-img').forEach(img => {
     img.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -934,19 +725,19 @@ function renderMessageRow(msg, showTimestamp) {
   });
 
   row.addEventListener('click', (e) => {
-    if (!selectionMode) return;
+    if(!selectionMode) return;
     toggleSelect(msg.id);
   });
 
   return row;
 }
 
-function renderHeader() {
+function renderHeader(){
   const room = state.rooms.find(r => r.id === state.currentRoomId);
-  document.getElementById('chat-title').textContent = room ? room.name : '';
+  document.getElementById('chat-title').textContent = room ? room.name : '-';
 }
 
-function renderAll() {
+function renderAll(){
   renderRooms();
   renderHeader();
   renderMessages();
@@ -954,12 +745,11 @@ function renderAll() {
   renderAttachPreview();
 }
 
-/* ------------------------------------------------------------------ *
- * 5. イベントハンドラ / 主要ロジック
- * ------------------------------------------------------------------ */
-
-// ---- ルーム操作 ----
-function switchRoom(roomId) {
+/* ------------------------------------------------------------------
+   5. イベントハンドラ
+------------------------------------------------------------------ */
+/* ---- ルーム操作 ---- */
+function switchRoom(roomId){
   state.currentRoomId = roomId;
   selectionMode = false;
   selectedIds.clear();
@@ -968,12 +758,9 @@ function switchRoom(roomId) {
   document.getElementById('sidebar').classList.remove('open');
 }
 
-function createRoom(name) {
+function createRoom(name){
   const trimmed = (name || '').trim();
-  if (!trimmed) {
-    Utils.toast('ルーム名を入力してください');
-    return;
-  }
+  if(!trimmed){ Utils.toast('ルーム名を入力してください'); return; }
   const id = Utils.uid();
   state.rooms.push({ id, name: trimmed, createdAt: Date.now() });
   state.messagesByRoom[id] = [];
@@ -982,44 +769,31 @@ function createRoom(name) {
   renderAll();
 }
 
-function deleteRoom(roomId) {
-  if (state.rooms.length <= 1) {
-    Utils.toast('最後のルームは削除できません');
-    return;
-  }
-  if (!confirm('このルームと中のメモを全て削除します。よろしいですか？')) return;
+function deleteRoom(roomId){
+  if(state.rooms.length <= 1){ Utils.toast('最後のルームは削除できません'); return; }
+  if(!confirm('このルームを削除しますか？（メッセージも全て削除されます）')) return;
   state.rooms = state.rooms.filter(r => r.id !== roomId);
   delete state.messagesByRoom[roomId];
-  if (state.currentRoomId === roomId) {
-    state.currentRoomId = state.rooms[0].id;
-  }
+  if(state.currentRoomId === roomId) state.currentRoomId = state.rooms[0].id;
   persist();
   renderAll();
 }
 
-function renameRoom(roomId, newName) {
+function renameRoom(roomId, newName){
   const trimmed = (newName || '').trim();
-  if (!trimmed) {
-    Utils.toast('ルーム名を入力してください');
-    return;
-  }
+  if(!trimmed){ Utils.toast('名前を入力してください'); return; }
   const room = state.rooms.find(r => r.id === roomId);
-  if (room) room.name = trimmed;
+  if(room) room.name = trimmed;
   persist();
   renderAll();
 }
 
-// ---- メッセージ送信 ----
-async function sendMessage() {
+/* ---- メッセージ送信 ---- */
+async function sendMessage(){
   const input = document.getElementById('msg-input');
   const rawText = input.value;
   const text = Utils.expandDateVariables(rawText).trim();
-
-  if (!text && pendingAttachments.length === 0) {
-    Utils.toast('メモが空です。テキストまたはファイルを追加してください');
-    return;
-  }
-
+  if(!text && pendingAttachments.length === 0){ Utils.toast('メモを入力してください'); return; }
   const msg = {
     id: Utils.uid(),
     roomId: state.currentRoomId,
@@ -1027,7 +801,6 @@ async function sendMessage() {
     attachments: pendingAttachments.slice(),
     createdAt: Date.now()
   };
-
   state.messagesByRoom[state.currentRoomId].push(msg);
   pendingAttachments = [];
   input.value = '';
@@ -1037,8 +810,8 @@ async function sendMessage() {
   renderAll();
 }
 
-// ---- メッセージ単体コピー ----
-function copyMessageText(text) {
+/* ---- コピー ---- */
+function copyMessageText(text){
   const doCopy = () => {
     const ta = document.createElement('textarea');
     ta.value = text;
@@ -1049,102 +822,78 @@ function copyMessageText(text) {
     document.execCommand('copy');
     document.body.removeChild(ta);
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
+  if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).catch(doCopy);
-  } else {
+  }else{
     doCopy();
   }
   Utils.toast('コピーしました');
 }
 
-// ---- メッセージ単体削除 ----
-function deleteMessage(msgId) {
-  if (!confirm('このメモを削除しますか？')) return;
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+/* ---- 削除 ---- */
+function deleteMessage(msgId){
+  if(!confirm('このメモを削除しますか？')) return;
+  const msgs = state.messagesByRoom[state.currentRoomId];
   state.messagesByRoom[state.currentRoomId] = msgs.filter(m => m.id !== msgId);
   selectedIds.delete(msgId);
   persist();
   renderAll();
-  Utils.toast('メモを削除しました');
+  Utils.toast('削除しました');
 }
 
-// ---- 選択したメッセージを一括削除 ----
-function deleteSelectedMessages() {
-  if (selectedIds.size === 0) {
-    Utils.toast('メッセージが選択されていません');
-    return;
-  }
-  if (!confirm(`選択した${selectedIds.size}件のメモを削除しますか？`)) return;
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+function deleteSelectedMessages(){
+  if(selectedIds.size === 0){ Utils.toast('選択されていません'); return; }
+  if(!confirm(`選択した${selectedIds.size}件のメモを削除しますか？`)) return;
+  const msgs = state.messagesByRoom[state.currentRoomId];
   state.messagesByRoom[state.currentRoomId] = msgs.filter(m => !selectedIds.has(m.id));
   selectedIds.clear();
   selectionMode = false;
   persist();
   renderAll();
-  Utils.toast('選択したメモを削除しました');
+  Utils.toast('削除しました');
 }
 
-// ---- ルーム内メッセージの一括削除 ----
-function bulkDeleteAllMessages() {
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
-  if (msgs.length === 0) {
-    Utils.toast('メモがありません');
-    return;
-  }
-  if (!confirm('このルームの全メッセージを削除しますか？この操作は取り消せません。')) return;
+function bulkDeleteAllMessages(){
+  if(!confirm('このルームの全メッセージを削除しますか？この操作は取り消せません。')) return;
   state.messagesByRoom[state.currentRoomId] = [];
   selectedIds.clear();
-  selectionMode = false;
   persist();
   renderAll();
   Utils.toast('全メッセージを削除しました');
 }
 
-function getTodayStart() {
+function bulkDeleteBeforeToday(){
+  if(!confirm('今日より前のメッセージを削除しますか？この操作は取り消せません。')) return;
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-}
-
-function bulkDeleteBeforeToday() {
-  const todayStart = getTodayStart();
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
-  const targetCount = msgs.filter(m => m.createdAt < todayStart).length;
-  if (targetCount === 0) {
-    Utils.toast('今日より前のメモがありません');
-    return;
-  }
-  if (!confirm(`今日より前のメモ${targetCount}件を削除しますか？`)) return;
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const msgs = state.messagesByRoom[state.currentRoomId];
   state.messagesByRoom[state.currentRoomId] = msgs.filter(m => m.createdAt >= todayStart);
   selectedIds.clear();
-  selectionMode = false;
   persist();
   renderAll();
-  Utils.toast('今日より前のメモを削除しました');
+  Utils.toast('今日より前のメッセージを削除しました');
 }
 
-// ---- メッセージ単体編集 ----
-function startEditMessage(msgId, bubbleEl, bubbleWrapEl) {
-  if (selectionMode) return;
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+/* ---- 編集 ---- */
+function startEditMessage(msgId, bubbleEl, bubbleWrapEl){
+  if(selectionMode) return;
+  const msgs = state.messagesByRoom[state.currentRoomId];
   const msg = msgs.find(m => m.id === msgId);
-  if (!msg) return;
-
-  // 既に編集中なら二重起動を防ぐ
-  if (bubbleWrapEl.querySelector('.msg-edit-textarea')) return;
+  if(!msg) return;
+  if(bubbleWrapEl.querySelector('.msg-edit-textarea')) return;
 
   const originalHtml = bubbleEl.innerHTML;
   bubbleEl.innerHTML = '';
-
   const textarea = document.createElement('textarea');
   textarea.className = 'msg-edit-textarea';
-  textarea.value = msg.text || '';
+  textarea.value = msg.text;
   bubbleEl.appendChild(textarea);
 
   const actions = document.createElement('div');
   actions.className = 'msg-edit-actions';
   actions.innerHTML = `
     <button class="msg-edit-cancel">キャンセル</button>
-    <button class="msg-edit-save primary">保存</button>
+    <button class="msg-edit-save primary">完了</button>
   `;
   bubbleWrapEl.appendChild(actions);
 
@@ -1153,56 +902,50 @@ function startEditMessage(msgId, bubbleEl, bubbleWrapEl) {
   autoResizeTextarea(textarea);
   textarea.addEventListener('input', () => autoResizeTextarea(textarea));
 
-  const cleanup = () => {
-    actions.remove();
-  };
+  const cleanup = () => { actions.remove(); };
 
   actions.querySelector('.msg-edit-cancel').addEventListener('click', (e) => {
     e.stopPropagation();
     cleanup();
     renderMessages();
   });
-
   actions.querySelector('.msg-edit-save').addEventListener('click', (e) => {
     e.stopPropagation();
     saveEditedMessage(msgId, textarea.value);
   });
-
   textarea.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
+    if(e.key === 'Escape'){
       e.preventDefault();
       cleanup();
       renderMessages();
-    } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    }else if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){
       e.preventDefault();
       saveEditedMessage(msgId, textarea.value);
     }
   });
 }
 
-function saveEditedMessage(msgId, newRawText) {
+function saveEditedMessage(msgId, newRawText){
   const newText = Utils.expandDateVariables(newRawText).trim();
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const msgs = state.messagesByRoom[state.currentRoomId];
   const msg = msgs.find(m => m.id === msgId);
-  if (!msg) return;
-
-  if (!newText && (!msg.attachments || msg.attachments.length === 0)) {
-    Utils.toast('メモが空です。テキストを入力するか編集をキャンセルしてください');
+  if(!msg) return;
+  if(!newText && !(msg.attachments && msg.attachments.length > 0)){
+    Utils.toast('内容が空です');
     return;
   }
-
   msg.text = newText;
   msg.editedAt = Date.now();
   persist();
   renderAll();
-  Utils.toast('メモを更新しました');
+  Utils.toast('編集しました');
 }
 
-// ---- ファイル添付 ----
-async function handleFilesSelected(fileList) {
+/* ---- 添付ファイル ---- */
+async function handleFilesSelected(fileList){
   const files = Array.from(fileList);
-  for (const file of files) {
-    try {
+  for(const file of files){
+    try{
       const isImage = file.type.startsWith('image/');
       const att = {
         id: Utils.uid(),
@@ -1212,20 +955,19 @@ async function handleFilesSelected(fileList) {
         isImage: isImage,
         dataUrl: null
       };
-      if (isImage) {
-        // 画像のみ dataURL を保持してプレビュー・永続化する（非画像は容量節約のためメタ情報のみ保存）
+      if(isImage){
         att.dataUrl = await Utils.readFileAsDataURL(file);
       }
       pendingAttachments.push(att);
-    } catch (e) {
+    }catch(e){
       console.error(e);
-      Utils.toast(`ファイル "${file.name}" の読み込みに失敗しました`);
+      Utils.toast('添付に失敗しました: ' + file.name);
     }
   }
   renderAttachPreview();
 }
 
-function renderAttachPreview() {
+function renderAttachPreview(){
   const box = document.getElementById('attach-preview');
   box.innerHTML = '';
   pendingAttachments.forEach(att => {
@@ -1240,89 +982,82 @@ function renderAttachPreview() {
   });
 }
 
-function autoResizeTextarea(el) {
+function autoResizeTextarea(el){
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-// ---- 選択モード ----
-function toggleSelectionMode() {
+/* ---- 選択モード ---- */
+function toggleSelectionMode(){
   selectionMode = !selectionMode;
-  if (!selectionMode) selectedIds.clear();
+  if(!selectionMode) selectedIds.clear();
   renderAll();
 }
 
-function toggleSelect(msgId) {
-  if (selectedIds.has(msgId)) selectedIds.delete(msgId);
+function toggleSelect(msgId){
+  if(selectedIds.has(msgId)) selectedIds.delete(msgId);
   else selectedIds.add(msgId);
   renderMessages();
   renderSelectionBar();
 }
 
-function renderSelectionBar() {
+function renderSelectionBar(){
   const bar = document.getElementById('selection-bar');
-  if (selectionMode) {
+  if(selectionMode){
     bar.classList.add('active');
     document.getElementById('selection-count').textContent = `${selectedIds.size}件選択中`;
-  } else {
+  }else{
     bar.classList.remove('active');
   }
 }
 
-/* ------------------------------------------------------------------ *
- * Markdownエクスポート
- * ------------------------------------------------------------------ */
-function buildMarkdown(messages, scopeLabel) {
+/* ------------------------------------------------------------------
+   Markdownエクスポート
+------------------------------------------------------------------ */
+function buildMarkdown(messages, scopeLabel){
   const dateFormat = getYamlSetting('display.dateFormat', 'YYYY-MM-DD');
-
   let md = '';
-  // YAML設定に入力された内容をそのままフロントマターとして先頭に付与する（日付/時刻トークンのみ変換）
   const rawYaml = (state.yamlText || '').trim();
-  if (rawYaml) {
+  if(rawYaml){
     const expandedYaml = Utils.expandFrontmatterDateTokens(rawYaml);
-    md += `---\n${expandedYaml}\n---\n\n`;
+    md += '---\n' + expandedYaml + '\n---\n\n';
   }
-
   let lastDate = null;
   messages.forEach(msg => {
     const dLabel = Utils.formatDate(msg.createdAt, dateFormat);
-    if (dLabel !== lastDate) {
-      md += `## ${dLabel}\n\n`;
+    if(dLabel !== lastDate){
+      md += `\n## ${dLabel}\n\n`;
       lastDate = dLabel;
     }
-    md += `**${Utils.formatTime(msg.createdAt)}**\n`;
-    if (msg.text) md += `${msg.text}\n\n`;
+    md += `- ${Utils.formatTime(msg.createdAt)} `;
+    if(msg.text) md += msg.text;
     (msg.attachments || []).forEach(att => {
-      md += `![[${att.name}]]\n\n`;
+      md += ` [📎${att.name}]`;
     });
+    md += '\n';
   });
   return md;
 }
 
-function exportMessages(scope) {
+function exportMessages(scope){
   const allMsgs = state.messagesByRoom[state.currentRoomId] || [];
-  let target = [];
-  let label = '';
-  if (scope === 'room') {
+  let target, label;
+  if(scope === 'room'){
     target = allMsgs;
-    label = 'チャットルーム全体';
-  } else {
+    label = '全体';
+  }else{
     target = allMsgs.filter(m => selectedIds.has(m.id));
-    label = target.length > 1 ? `選択メッセージ ${target.length}件` : '選択メッセージ 1件';
+    label = `選択(${target.length}件)`;
   }
-  if (target.length === 0) {
-    Utils.toast('エクスポート対象のメッセージがありません');
-    return;
-  }
+  if(target.length === 0){ Utils.toast('メッセージがありません'); return; }
   const md = buildMarkdown(target, label);
   document.getElementById('export-preview').value = md;
-  // モーダルを開くたびにボタン表示状態をリセットする（コピー前の初期状態に戻す）
   document.getElementById('export-copy-btn').style.display = '';
   document.getElementById('export-obsidian-btn').style.display = 'none';
   openModal('modal-export');
 }
 
-function downloadMarkdown(content, filename) {
+function downloadMarkdown(content, filename){
   const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1334,16 +1069,16 @@ function downloadMarkdown(content, filename) {
   URL.revokeObjectURL(url);
 }
 
-/* ------------------------------------------------------------------ *
- * モーダル共通操作
- * ------------------------------------------------------------------ */
-function openModal(id) { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+/* ------------------------------------------------------------------
+   モーダル操作
+------------------------------------------------------------------ */
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
 
-/* ------------------------------------------------------------------ *
- * 6. 初期化 & イベント登録
- * ------------------------------------------------------------------ */
-function initEventListeners() {
+/* ------------------------------------------------------------------
+   6. Init
+------------------------------------------------------------------ */
+function initEventListeners(){
   document.getElementById('new-room-btn').addEventListener('click', () => {
     document.getElementById('new-room-name').value = '';
     openModal('modal-new-room');
@@ -1368,22 +1103,20 @@ function initEventListeners() {
   });
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) overlay.classList.remove('active');
+      if(e.target === overlay) overlay.classList.remove('active');
     });
   });
 
-  // メッセージ入力
   const input = document.getElementById('msg-input');
   input.addEventListener('input', () => autoResizeTextarea(input));
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.shiftKey) {
+    if(e.key === 'Enter' && e.shiftKey){
       e.preventDefault();
       sendMessage();
     }
   });
   document.getElementById('send-btn').addEventListener('click', sendMessage);
 
-  // ツールバー(アコーディオン)の開閉
   document.getElementById('toolbar-toggle-btn').addEventListener('click', () => {
     const toolbar = document.getElementById('input-toolbar');
     const toggleBtn = document.getElementById('toolbar-toggle-btn');
@@ -1391,20 +1124,19 @@ function initEventListeners() {
     toggleBtn.classList.toggle('open', isOpen);
   });
 
-  // ファイル添付
   document.getElementById('attach-btn').addEventListener('click', () => {
     document.getElementById('file-input').click();
   });
 
-  // Todoモード: 入力欄の文頭に「- [ ] 」を付与（再度押すと解除）
+  // Todoテンプレート挿入
   document.getElementById('todo-btn').addEventListener('click', () => {
     const input = document.getElementById('msg-input');
     const todoBtn = document.getElementById('todo-btn');
     const prefix = '- [ ] ';
-    if (input.value.startsWith(prefix)) {
+    if(input.value.startsWith(prefix)){
       input.value = input.value.slice(prefix.length);
       todoBtn.classList.remove('active');
-    } else {
+    }else{
       input.value = prefix + input.value;
       todoBtn.classList.add('active');
     }
@@ -1412,12 +1144,12 @@ function initEventListeners() {
     input.setSelectionRange(input.value.length, input.value.length);
     autoResizeTextarea(input);
   });
+
   document.getElementById('file-input').addEventListener('change', (e) => {
     handleFilesSelected(e.target.files);
     e.target.value = '';
   });
 
-  // 選択モード
   document.getElementById('select-mode-btn').addEventListener('click', toggleSelectionMode);
   document.getElementById('sel-cancel-btn').addEventListener('click', () => {
     selectionMode = false;
@@ -1444,16 +1176,10 @@ function initEventListeners() {
     ta.select();
     document.execCommand('copy');
     Utils.toast('コピーしました');
-    // コピー完了後、ボタンを「Obsidianに追加」と入れ替えて表示する
-    document.getElementById('export-copy-btn').style.display = 'none';
-    document.getElementById('export-obsidian-btn').style.display = '';
-  });
-  document.getElementById('export-obsidian-btn').addEventListener('click', () => {
-    window.location.href = 'https://tinyurl.com/y63jwarm';
   });
   document.getElementById('export-download-btn').addEventListener('click', () => {
     const room = state.rooms.find(r => r.id === state.currentRoomId);
-    const filename = `${room ? room.name : 'memo'}_${Utils.formatDate(Date.now(),'YYYY-MM-DD')}.md`;
+    const filename = `${room ? room.name : 'memo'}_${Utils.formatDate(Date.now(),'YYYYMMDD')}.md`;
     downloadMarkdown(document.getElementById('export-preview').value, filename);
   });
 
@@ -1468,13 +1194,12 @@ function initEventListeners() {
     const backup = state.yamlText;
     state.yamlText = text;
     const ok = applyYamlConfig();
-    if (ok) {
+    if(ok){
       persist();
       renderAll();
       Utils.toast('YAML設定を保存しました');
       closeModal('modal-yaml');
-    } else {
-      // エラー時は state を元に戻し、アプリを壊さない
+    }else{
       state.yamlText = backup;
     }
   });
@@ -1482,13 +1207,13 @@ function initEventListeners() {
     document.getElementById('yaml-textarea').value = DEFAULT_YAML;
   });
 
-  // モバイル用サイドバー開閉
   document.getElementById('menu-btn').addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
   });
 }
 
-function init() {
+function init(){
+  ensureIntegrity();
   applyYamlConfig();
   initEventListeners();
   renderAll();
@@ -1497,12 +1222,10 @@ function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-// ---- PWA: Service Worker登録 ----
-if ('serviceWorker' in navigator) {
+/* ---- PWA Service Worker登録 ---- */
+if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => {
-      console.warn('Service Worker登録に失敗しました', err);
-    });
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service Worker登録失敗', err));
   });
 }
 </script>
