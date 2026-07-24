@@ -116,7 +116,8 @@
     align-items:center;
     justify-content:space-between;
   }
-  #chat-title{font-weight:bold;font-size:16px;}
+  #chat-title{font-weight:bold;font-size:16px;cursor:pointer;}
+  #chat-title:hover{text-decoration:underline;}
   #chat-actions{display:flex;gap:8px;}
   #chat-actions button{
     border:1px solid var(--border);
@@ -324,6 +325,7 @@
     font-size:12px;
   }
   #selection-bar button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
+  #selection-bar button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
 
   /* ---------- モーダル共通 ---------- */
   .modal-overlay{
@@ -401,12 +403,12 @@
     <div id="chat-header">
       <div style="display:flex;align-items:center;">
         <button id="menu-btn">☰</button>
-        <span id="chat-title">-</span>
+        <span id="chat-title" title="タップして名前を変更">-</span>
       </div>
       <div id="chat-actions">
-        <button id="select-mode-btn">選択</button>
-        <button id="export-room-btn">ルーム全体エクスポート</button>
-        <button id="rename-room-btn">名前変更</button>
+        <button id="select-mode-btn" title="選択">☑️</button>
+        <button id="export-room-btn" title="ルーム全体エクスポート">📤</button>
+        <button id="bulk-delete-btn" title="一括削除">🗑</button>
       </div>
     </div>
 
@@ -416,6 +418,7 @@
       <span id="selection-count">0件選択中</span>
       <div class="sel-actions">
         <button id="sel-export-btn" class="primary">エクスポート</button>
+        <button id="sel-delete-btn" class="danger">削除</button>
         <button id="sel-cancel-btn">キャンセル</button>
       </div>
     </div>
@@ -463,6 +466,23 @@
     <div class="modal-footer">
       <button data-close="modal-rename-room">キャンセル</button>
       <button class="primary" id="confirm-rename-room">変更</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 一括削除 ===== -->
+<div class="modal-overlay" id="modal-bulk-delete">
+  <div class="modal-box">
+    <div class="modal-header"><span>メッセージの一括削除</span><button class="close-x" data-close="modal-bulk-delete">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:555;margin-top:0;">削除方法を選んでください。この操作は取り消せません。</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button id="bulk-delete-all-btn" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;text-align:left;">🗑 このルームの全メッセージを削除</button>
+        <button id="bulk-delete-before-today-btn" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;text-align:left;">🗑 今日より前のメッセージを削除</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button data-close="modal-bulk-delete">キャンセル</button>
     </div>
   </div>
 </div>
@@ -1048,6 +1068,60 @@ function deleteMessage(msgId) {
   Utils.toast('メモを削除しました');
 }
 
+// ---- 選択したメッセージを一括削除 ----
+function deleteSelectedMessages() {
+  if (selectedIds.size === 0) {
+    Utils.toast('メッセージが選択されていません');
+    return;
+  }
+  if (!confirm(`選択した${selectedIds.size}件のメモを削除しますか？`)) return;
+  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  state.messagesByRoom[state.currentRoomId] = msgs.filter(m => !selectedIds.has(m.id));
+  selectedIds.clear();
+  selectionMode = false;
+  persist();
+  renderAll();
+  Utils.toast('選択したメモを削除しました');
+}
+
+// ---- ルーム内メッセージの一括削除 ----
+function bulkDeleteAllMessages() {
+  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  if (msgs.length === 0) {
+    Utils.toast('メモがありません');
+    return;
+  }
+  if (!confirm('このルームの全メッセージを削除しますか？この操作は取り消せません。')) return;
+  state.messagesByRoom[state.currentRoomId] = [];
+  selectedIds.clear();
+  selectionMode = false;
+  persist();
+  renderAll();
+  Utils.toast('全メッセージを削除しました');
+}
+
+function getTodayStart() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+}
+
+function bulkDeleteBeforeToday() {
+  const todayStart = getTodayStart();
+  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const targetCount = msgs.filter(m => m.createdAt < todayStart).length;
+  if (targetCount === 0) {
+    Utils.toast('今日より前のメモがありません');
+    return;
+  }
+  if (!confirm(`今日より前のメモ${targetCount}件を削除しますか？`)) return;
+  state.messagesByRoom[state.currentRoomId] = msgs.filter(m => m.createdAt >= todayStart);
+  selectedIds.clear();
+  selectionMode = false;
+  persist();
+  renderAll();
+  Utils.toast('今日より前のメモを削除しました');
+}
+
 // ---- メッセージ単体編集 ----
 function startEditMessage(msgId, bubbleEl, bubbleWrapEl) {
   if (selectionMode) return;
@@ -1279,7 +1353,7 @@ function initEventListeners() {
     closeModal('modal-new-room');
   });
 
-  document.getElementById('rename-room-btn').addEventListener('click', () => {
+  document.getElementById('chat-title').addEventListener('click', () => {
     const room = state.rooms.find(r => r.id === state.currentRoomId);
     document.getElementById('rename-room-input').value = room ? room.name : '';
     openModal('modal-rename-room');
@@ -1351,7 +1425,19 @@ function initEventListeners() {
     renderAll();
   });
   document.getElementById('sel-export-btn').addEventListener('click', () => exportMessages('selection'));
+  document.getElementById('sel-delete-btn').addEventListener('click', deleteSelectedMessages);
   document.getElementById('export-room-btn').addEventListener('click', () => exportMessages('room'));
+
+  // 一括削除
+  document.getElementById('bulk-delete-btn').addEventListener('click', () => openModal('modal-bulk-delete'));
+  document.getElementById('bulk-delete-all-btn').addEventListener('click', () => {
+    closeModal('modal-bulk-delete');
+    bulkDeleteAllMessages();
+  });
+  document.getElementById('bulk-delete-before-today-btn').addEventListener('click', () => {
+    closeModal('modal-bulk-delete');
+    bulkDeleteBeforeToday();
+  });
 
   document.getElementById('export-copy-btn').addEventListener('click', () => {
     const ta = document.getElementById('export-preview');
