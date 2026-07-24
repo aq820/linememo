@@ -171,13 +171,30 @@
   .msg-row.selected .msg-bubble{outline:2px solid var(--line-green);}
   .msg-time{font-size:11px;color:#999;margin-top:3px;}
   .msg-row{position:relative;}
-  .msg-delete-btn{
+  .msg-delete-btn, .msg-edit-btn{
     background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
     padding:4px 6px;opacity:0;transition:opacity .15s;align-self:flex-start;margin-top:6px;
   }
-  .msg-row:hover .msg-delete-btn{opacity:1;}
+  .msg-row:hover .msg-delete-btn, .msg-row:hover .msg-edit-btn{opacity:1;}
   .msg-delete-btn:hover{color:var(--danger);}
-  .msg-row.selecting .msg-delete-btn{display:none;}
+  .msg-edit-btn:hover{color:var(--primary);}
+  .msg-row.selecting .msg-delete-btn, .msg-row.selecting .msg-edit-btn{display:none;}
+  .msg-edit-textarea{
+    width:100%;min-width:180px;box-sizing:border-box;border:1px solid var(--primary);
+    border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;resize:none;
+    line-height:1.4;background:#fff;color:#111;
+  }
+  .msg-edit-actions{
+    display:flex;gap:6px;justify-content:flex-end;margin-top:4px;
+  }
+  .msg-edit-actions button{
+    font-size:12px;padding:4px 10px;border-radius:14px;border:1px solid #ddd;
+    background:#fff;cursor:pointer;color:#555;
+  }
+  .msg-edit-actions button.primary{
+    background:var(--primary);color:#fff;border-color:var(--primary);
+  }
+  .msg-edited-label{font-size:11px;color:#999;margin-top:2px;}
   .msg-img{max-width:220px;border-radius:10px;display:block;margin-top:4px;cursor:pointer;}
   .file-chip{
     display:flex;align-items:center;gap:8px;
@@ -784,12 +801,25 @@ function renderMessageRow(msg, showTimestamp) {
   if (showTimestamp) {
     const timeEl = document.createElement('div');
     timeEl.className = 'msg-time';
-    timeEl.textContent = Utils.formatTime(msg.createdAt);
+    timeEl.textContent = Utils.formatTime(msg.createdAt) + (msg.editedAt ? '（編集済み）' : '');
     bubbleWrap.appendChild(timeEl);
   }
 
   row.innerHTML = checkboxHtml;
   row.appendChild(bubbleWrap);
+
+  // 編集ボタン（テキストメッセージのみ対象、選択モード中は非表示、ホバー時のみ表示）
+  if (msg.text || (msg.attachments && msg.attachments.length === 0)) {
+    const editBtn = document.createElement('button');
+    editBtn.className = 'msg-edit-btn';
+    editBtn.title = 'このメッセージを編集';
+    editBtn.textContent = '✏️';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startEditMessage(msg.id, bubble, bubbleWrap);
+    });
+    row.appendChild(editBtn);
+  }
 
   // 削除ボタン（選択モード中は非表示、ホバー時のみ表示）
   const deleteBtn = document.createElement('button');
@@ -923,6 +953,82 @@ function deleteMessage(msgId) {
   persist();
   renderAll();
   Utils.toast('メモを削除しました');
+}
+
+// ---- メッセージ単体編集 ----
+function startEditMessage(msgId, bubbleEl, bubbleWrapEl) {
+  if (selectionMode) return;
+  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const msg = msgs.find(m => m.id === msgId);
+  if (!msg) return;
+
+  // 既に編集中なら二重起動を防ぐ
+  if (bubbleWrapEl.querySelector('.msg-edit-textarea')) return;
+
+  const originalHtml = bubbleEl.innerHTML;
+  bubbleEl.innerHTML = '';
+
+  const textarea = document.createElement('textarea');
+  textarea.className = 'msg-edit-textarea';
+  textarea.value = msg.text || '';
+  bubbleEl.appendChild(textarea);
+
+  const actions = document.createElement('div');
+  actions.className = 'msg-edit-actions';
+  actions.innerHTML = `
+    <button class="msg-edit-cancel">キャンセル</button>
+    <button class="msg-edit-save primary">保存</button>
+  `;
+  bubbleWrapEl.appendChild(actions);
+
+  textarea.focus();
+  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  autoResizeTextarea(textarea);
+  textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+
+  const cleanup = () => {
+    actions.remove();
+  };
+
+  actions.querySelector('.msg-edit-cancel').addEventListener('click', (e) => {
+    e.stopPropagation();
+    cleanup();
+    renderMessages();
+  });
+
+  actions.querySelector('.msg-edit-save').addEventListener('click', (e) => {
+    e.stopPropagation();
+    saveEditedMessage(msgId, textarea.value);
+  });
+
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      cleanup();
+      renderMessages();
+    } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      saveEditedMessage(msgId, textarea.value);
+    }
+  });
+}
+
+function saveEditedMessage(msgId, newRawText) {
+  const newText = Utils.expandDateVariables(newRawText).trim();
+  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const msg = msgs.find(m => m.id === msgId);
+  if (!msg) return;
+
+  if (!newText && (!msg.attachments || msg.attachments.length === 0)) {
+    Utils.toast('メモが空です。テキストを入力するか編集をキャンセルしてください');
+    return;
+  }
+
+  msg.text = newText;
+  msg.editedAt = Date.now();
+  persist();
+  renderAll();
+  Utils.toast('メモを更新しました');
 }
 
 // ---- ファイル添付 ----
