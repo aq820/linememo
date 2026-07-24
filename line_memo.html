@@ -1183,7 +1183,7 @@ function buildMarkdown(messages, scopeLabel) {
       md += `## ${dLabel}\n\n`;
       lastDate = dLabel;
     }
-    md += `**${Utils.formatTime(msg.createdAt)}**\n\n`;
+    md += `**${Utils.formatTime(msg.createdAt)}**\n`;
     if (msg.text) md += `${msg.text}\n\n`;
     (msg.attachments || []).forEach(att => {
       md += `![[${att.name}]]\n\n`;
