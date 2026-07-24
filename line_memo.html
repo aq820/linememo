@@ -189,12 +189,13 @@
     overflow:hidden;
   }
   .msg-row:hover .msg-actions{opacity:1;height:auto;overflow:visible;}
-  .msg-delete-btn, .msg-edit-btn{
+  .msg-delete-btn, .msg-edit-btn, .msg-copy-btn{
     background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
     padding:4px 6px;
   }
   .msg-delete-btn:hover{color:var(--danger);}
   .msg-edit-btn:hover{color:var(--primary);}
+  .msg-copy-btn:hover{color:var(--line-green);}
   .msg-row.selecting .msg-actions{display:none;}
   .msg-edit-textarea{
     width:100%;min-width:180px;box-sizing:border-box;border:1px solid var(--primary);
@@ -863,9 +864,21 @@ function renderMessageRow(msg, showTimestamp) {
   topRow.appendChild(bubbleWrap);
   row.appendChild(topRow);
 
-  // 編集・削除ボタン（吹き出しの下に配置。選択モード中は非表示、ホバー時のみ表示）
+  // コピー・編集・削除ボタン（吹き出しの下に配置。選択モード中は非表示、ホバー時のみ表示）
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'msg-actions';
+
+  if (msg.text) {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'msg-copy-btn';
+    copyBtn.title = 'このメッセージをコピー';
+    copyBtn.textContent = '📋';
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      copyMessageText(msg.text);
+    });
+    actionsWrap.appendChild(copyBtn);
+  }
 
   if (msg.text || (msg.attachments && msg.attachments.length === 0)) {
     const editBtn = document.createElement('button');
@@ -1002,6 +1015,26 @@ async function sendMessage() {
   autoResizeTextarea(input);
   persist();
   renderAll();
+}
+
+// ---- メッセージ単体コピー ----
+function copyMessageText(text) {
+  const doCopy = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(doCopy);
+  } else {
+    doCopy();
+  }
+  Utils.toast('コピーしました');
 }
 
 // ---- メッセージ単体削除 ----
