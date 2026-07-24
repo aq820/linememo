@@ -240,6 +240,17 @@
     flex-shrink:0;
   }
   #attach-btn:hover{background:#e2e2e2;}
+  #todo-btn{
+    background:#f0f0f0;
+    border:none;
+    border-radius:50%;
+    width:38px;height:38px;
+    font-size:16px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  #todo-btn:hover{background:#e2e2e2;}
+  #todo-btn.active{background:var(--line-green);}
   #msg-input{
     flex:1;
     resize:none;
@@ -395,6 +406,7 @@
     <div id="input-area">
       <button id="attach-btn" title="ファイル添付">📎</button>
       <input type="file" id="file-input" multiple style="display:none;">
+      <button id="todo-btn" title="Todo形式で先頭に追加">✅️</button>
       <textarea id="msg-input" rows="1" placeholder="メモを入力... (Shift+Enterで改行)"></textarea>
       <button id="send-btn">送信</button>
     </div>
@@ -963,6 +975,7 @@ async function sendMessage() {
   state.messagesByRoom[state.currentRoomId].push(msg);
   pendingAttachments = [];
   input.value = '';
+  document.getElementById('todo-btn').classList.remove('active');
   autoResizeTextarea(input);
   persist();
   renderAll();
@@ -1243,6 +1256,23 @@ function initEventListeners() {
   // ファイル添付
   document.getElementById('attach-btn').addEventListener('click', () => {
     document.getElementById('file-input').click();
+  });
+
+  // Todoモード: 入力欄の文頭に「- [ ] 」を付与（再度押すと解除）
+  document.getElementById('todo-btn').addEventListener('click', () => {
+    const input = document.getElementById('msg-input');
+    const todoBtn = document.getElementById('todo-btn');
+    const prefix = '- [ ] ';
+    if (input.value.startsWith(prefix)) {
+      input.value = input.value.slice(prefix.length);
+      todoBtn.classList.remove('active');
+    } else {
+      input.value = prefix + input.value;
+      todoBtn.classList.add('active');
+    }
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+    autoResizeTextarea(input);
   });
   document.getElementById('file-input').addEventListener('change', (e) => {
     handleFilesSelected(e.target.files);
