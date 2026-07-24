@@ -145,13 +145,21 @@
   }
   .msg-row{
     display:flex;
-    align-items:flex-start;
-    gap:8px;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:2px;
     max-width:78%;
     align-self:flex-end;
     position:relative;
+    width:fit-content;
   }
   .msg-row.selecting{cursor:pointer;}
+  .msg-row-top{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    width:100%;
+  }
   .msg-checkbox{
     width:18px;height:18px;margin-top:8px;flex-shrink:0;accent-color:var(--line-green);
   }
@@ -170,15 +178,23 @@
   .msg-bubble.file-msg{background:var(--bubble-file);border:1px solid var(--border);}
   .msg-row.selected .msg-bubble{outline:2px solid var(--line-green);}
   .msg-time{font-size:11px;color:#999;margin-top:3px;}
-  .msg-row{position:relative;}
+  .msg-actions{
+    display:flex;
+    gap:4px;
+    justify-content:flex-end;
+    opacity:0;
+    transition:opacity .15s;
+    height:0;
+    overflow:hidden;
+  }
+  .msg-row:hover .msg-actions{opacity:1;height:auto;overflow:visible;}
   .msg-delete-btn, .msg-edit-btn{
     background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
-    padding:4px 6px;opacity:0;transition:opacity .15s;align-self:flex-start;margin-top:6px;
+    padding:4px 6px;
   }
-  .msg-row:hover .msg-delete-btn, .msg-row:hover .msg-edit-btn{opacity:1;}
   .msg-delete-btn:hover{color:var(--danger);}
   .msg-edit-btn:hover{color:var(--primary);}
-  .msg-row.selecting .msg-delete-btn, .msg-row.selecting .msg-edit-btn{display:none;}
+  .msg-row.selecting .msg-actions{display:none;}
   .msg-edit-textarea{
     width:100%;min-width:180px;box-sizing:border-box;border:1px solid var(--primary);
     border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;resize:none;
@@ -805,10 +821,16 @@ function renderMessageRow(msg, showTimestamp) {
     bubbleWrap.appendChild(timeEl);
   }
 
-  row.innerHTML = checkboxHtml;
-  row.appendChild(bubbleWrap);
+  const topRow = document.createElement('div');
+  topRow.className = 'msg-row-top';
+  topRow.innerHTML = checkboxHtml;
+  topRow.appendChild(bubbleWrap);
+  row.appendChild(topRow);
 
-  // 編集ボタン（テキストメッセージのみ対象、選択モード中は非表示、ホバー時のみ表示）
+  // 編集・削除ボタン（吹き出しの下に配置。選択モード中は非表示、ホバー時のみ表示）
+  const actionsWrap = document.createElement('div');
+  actionsWrap.className = 'msg-actions';
+
   if (msg.text || (msg.attachments && msg.attachments.length === 0)) {
     const editBtn = document.createElement('button');
     editBtn.className = 'msg-edit-btn';
@@ -818,10 +840,9 @@ function renderMessageRow(msg, showTimestamp) {
       e.stopPropagation();
       startEditMessage(msg.id, bubble, bubbleWrap);
     });
-    row.appendChild(editBtn);
+    actionsWrap.appendChild(editBtn);
   }
 
-  // 削除ボタン（選択モード中は非表示、ホバー時のみ表示）
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'msg-delete-btn';
   deleteBtn.title = 'このメッセージを削除';
@@ -830,7 +851,9 @@ function renderMessageRow(msg, showTimestamp) {
     e.stopPropagation();
     deleteMessage(msg.id);
   });
-  row.appendChild(deleteBtn);
+  actionsWrap.appendChild(deleteBtn);
+
+  row.appendChild(actionsWrap);
 
   // 画像クリックで拡大表示
   row.querySelectorAll('.msg-img').forEach(img => {
