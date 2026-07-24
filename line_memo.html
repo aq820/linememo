@@ -455,6 +455,7 @@
       <textarea id="export-preview" readonly></textarea>
     </div>
     <div class="modal-footer">
+      <button id="export-obsidian-btn" class="primary" style="display:none;">Obsidianに追加</button>
       <button id="export-copy-btn">コピー</button>
       <button class="primary" id="export-download-btn">.mdをダウンロード</button>
     </div>
@@ -1172,6 +1173,9 @@ function exportMessages(scope) {
   }
   const md = buildMarkdown(target, label);
   document.getElementById('export-preview').value = md;
+  // モーダルを開くたびにボタン表示状態をリセットする（コピー前の初期状態に戻す）
+  document.getElementById('export-copy-btn').style.display = '';
+  document.getElementById('export-obsidian-btn').style.display = 'none';
   openModal('modal-export');
 }
 
@@ -1260,6 +1264,12 @@ function initEventListeners() {
     ta.select();
     document.execCommand('copy');
     Utils.toast('コピーしました');
+    // コピー完了後、ボタンを「Obsidianに追加」と入れ替えて表示する
+    document.getElementById('export-copy-btn').style.display = 'none';
+    document.getElementById('export-obsidian-btn').style.display = '';
+  });
+  document.getElementById('export-obsidian-btn').addEventListener('click', () => {
+    window.location.href = 'https://tinyurl.com/y63jwarm';
   });
   document.getElementById('export-download-btn').addEventListener('click', () => {
     const room = state.rooms.find(r => r.id === state.currentRoomId);
