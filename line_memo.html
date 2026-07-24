@@ -431,7 +431,7 @@
     </div>
     <div id="input-area">
       <button id="toolbar-toggle-btn" title="ツールを表示">＋</button>
-      <textarea id="msg-input" rows="1" placeholder="メモを入力... (Shift+Enterで改行)"></textarea>
+      <textarea id="msg-input" rows="1" placeholder="メモを入力... (Shift+Enterで送信)"></textarea>
       <button id="send-btn">送信</button>
     </div>
   </div>
@@ -1302,7 +1302,7 @@ function initEventListeners() {
   const input = document.getElementById('msg-input');
   input.addEventListener('input', () => autoResizeTextarea(input));
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
