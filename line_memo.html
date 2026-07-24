@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LINE風メモ</title>
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#06C755">
 <link rel="icon" href="icon-192.png">
@@ -527,6 +528,17 @@ const Utils = {
       .replace(/\{\{\s*HH:mm\s*\}\}/g, `${hh}:${mm}`);
   },
 
+  /** YAMLフロントマター用: リテラルの日付/時刻トークン(YYYY-MM-DD, YYYY/MM/DD, HH:mm)を実際の値へ変換する */
+  expandFrontmatterDateTokens(text) {
+    const d = new Date();
+    const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
+    const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
+    return text
+      .replace(/YYYY\/MM\/DD/g, `${y}/${m}/${day}`)
+      .replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`)
+      .replace(/HH:mm/g, `${hh}:${mm}`);
+  },
+
   formatDate(timestamp, pattern) {
     const d = new Date(timestamp);
     const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
@@ -560,99 +572,20 @@ const Utils = {
   },
 
   /**
-   * 依存ライブラリ無しで動く最小構成のYAMLサブセットパーサー。
-   * 対応: ネスト(インデント), 文字列/数値/真偽値, ハイフンによる配列。
-   * 複雑なYAML全機能はサポートしないが、設定用途には十分。
+   * YAML全般をサポートする本格パーサー。js-yaml(CDN読込)を利用し、
+   * ネスト・配列・複数行文字列・コメント・アンカー等の標準YAML構文を自由に記述できるようにする。
+   * js-yamlが読み込めない場合(オフライン等)はエラーとして分かりやすく通知し、アプリは落とさない。
    */
   parseSimpleYAML(text) {
-    const lines = text.split('\n').map(l => l.replace(/\t/g, '  '));
-    const root = {};
-    const stack = [{ indent: -1, node: root }];
-
-    const parseScalar = (raw) => {
-      let v = raw.trim();
-      if (v === '') return '';
-      if (/^".*"$/.test(v) || /^'.*'$/.test(v)) return v.slice(1, -1);
-      if (v === 'true') return true;
-      if (v === 'false') return false;
-      if (v === 'null' || v === '~') return null;
-      if (/^-?\d+(\.\d+)?$/.test(v)) return Number(v);
-      return v;
-    };
-
-    for (let i = 0; i < lines.length; i++) {
-      const rawLine = lines[i];
-      if (!rawLine.trim() || rawLine.trim().startsWith('#')) continue;
-      const indent = rawLine.match(/^(\s*)/)[1].length;
-      let content = rawLine.trim();
-
-      while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
-        stack.pop();
-      }
-      const parent = stack[stack.length - 1].node;
-
-      if (content.startsWith('- ')) {
-        // 配列要素
-        if (!Array.isArray(parent.__arr)) {
-          throw new Error(`${i + 1}行目: 配列の親キーが見つかりません -> "${rawLine}"`);
-        }
-        parent.__arr.push(parseScalar(content.slice(2)));
-        continue;
-      }
-
-      const sepIdx = content.indexOf(':');
-      if (sepIdx === -1) {
-        throw new Error(`${i + 1}行目: "key: value" の形式ではありません -> "${rawLine}"`);
-      }
-      const key = content.slice(0, sepIdx).trim();
-      const valueStr = content.slice(sepIdx + 1).trim();
-      if (!key) {
-        throw new Error(`${i + 1}行目: キーが空です -> "${rawLine}"`);
-      }
-
-      if (valueStr === '') {
-        // 次の行がネストしたオブジェクトか配列かは後続行で判定
-        const child = {};
-        parent[key] = child;
-        stack.push({ indent, node: child });
-        // 配列判定用にプレースホルダ
-        child.__pendingArrayCheck = true;
-        // 次の非空行を見て配列かどうか判定
-        for (let j = i + 1; j < lines.length; j++) {
-          if (!lines[j].trim()) continue;
-          if (lines[j].trim().startsWith('- ') && lines[j].match(/^(\s*)/)[1].length > indent) {
-            const arr = [];
-            parent[key] = arr;
-            stack[stack.length - 1].node = { __arr: arr };
-            // 上書き: 実際の値は __arr 経由で配列に入れる
-            Object.defineProperty(stack[stack.length - 1], 'arrRef', { value: arr, configurable: true });
-            // 置換: 親ノードのキーは配列そのものを指す
-            parent[key] = arr;
-            stack[stack.length - 1].node.__arr = arr;
-          }
-          break;
-        }
-        delete child.__pendingArrayCheck;
-      } else {
-        parent[key] = parseScalar(valueStr);
-      }
+    if (typeof jsyaml === 'undefined') {
+      throw new Error('YAMLパーサーライブラリの読み込みに失敗しました（オフラインの可能性があります）。ページを再読み込みしてください。');
     }
-
-    // クリーンアップ: __arr 補助キーを除去
-    const clean = (obj) => {
-      if (Array.isArray(obj)) return obj;
-      if (obj && typeof obj === 'object') {
-        if ('__arr' in obj) return clean(obj.__arr);
-        const out = {};
-        for (const k in obj) {
-          if (k === '__arr' || k === '__pendingArrayCheck') continue;
-          out[k] = clean(obj[k]);
-        }
-        return out;
-      }
-      return obj;
-    };
-    return clean(root);
+    const result = jsyaml.load(text);
+    if (result === undefined || result === null) return {};
+    if (typeof result !== 'object' || Array.isArray(result)) {
+      throw new Error('YAMLのトップレベルは key: value 形式のオブジェクトである必要があります。');
+    }
+    return result;
   },
 
   /** File を dataURL として読み込む(画像プレビュー用) */
@@ -1067,18 +1000,15 @@ function renderSelectionBar() {
  * Markdownエクスポート
  * ------------------------------------------------------------------ */
 function buildMarkdown(messages, scopeLabel) {
-  const room = state.rooms.find(r => r.id === state.currentRoomId);
-  const includeRoomName = getYamlSetting('export.includeRoomName', true);
-  const includeExportDate = getYamlSetting('export.includeExportDate', true);
-  const header = getYamlSetting('export.header', '# メモエクスポート');
   const dateFormat = getYamlSetting('display.dateFormat', 'YYYY-MM-DD');
 
   let md = '';
-  md += `${header}\n\n`;
-  if (includeRoomName && room) md += `- ルーム: ${room.name}\n`;
-  md += `- 種別: ${scopeLabel}\n`;
-  if (includeExportDate) md += `- エクスポート日時: ${Utils.formatDate(Date.now(), dateFormat)} ${Utils.formatTime(Date.now())}\n`;
-  md += `\n---\n\n`;
+  // YAML設定に入力された内容をそのままフロントマターとして先頭に付与する（日付/時刻トークンのみ変換）
+  const rawYaml = (state.yamlText || '').trim();
+  if (rawYaml) {
+    const expandedYaml = Utils.expandFrontmatterDateTokens(rawYaml);
+    md += `---\n${expandedYaml}\n---\n\n`;
+  }
 
   let lastDate = null;
   messages.forEach(msg => {
