@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINE風メモ</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#06C755">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LINE風メモ">
+<style>
+  :root{
+    --line-green:#06C755;
+    --line-green-dark:#04a746;
+    --bg-room:#f5f5f5;
+    --bubble-me:#8de1a1;
+    --bubble-file:#ffffff;
+    --border:#e0e0e0;
+    --danger:#e64a4a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Segoe UI",Roboto,sans-serif;}
+  body{background:#dcdcdc;}
+  #app{
+    display:flex;
+    height:100vh;
+    max-width:1200px;
+    margin:0 auto;
+    background:#fff;
+    box-shadow:0 0 20px rgba(0,0,0,.15);
+    overflow:hidden;
+  }
+  /* ---------- サイドバー(ルーム一覧) ---------- */
+  #sidebar{
+    width:280px;
+    min-width:220px;
+    background:#fff;
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+  }
+  #sidebar-header{
+    background:var(--line-green);
+    color:#fff;
+    padding:14px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-weight:bold;
+    font-size:16px;
+  }
+  #sidebar-header button{
+    background:rgba(255,255,255,.2);
+    border:none;
+    color:#fff;
+    border-radius:6px;
+    padding:6px 10px;
+    cursor:pointer;
+    font-size:13px;
+  }
+  #sidebar-header button:hover{background:rgba(255,255,255,.35);}
+  #room-list{flex:1;overflow-y:auto;}
+  .room-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    cursor:pointer;
+    border-bottom:1px solid #f0f0f0;
+    position:relative;
+  }
+  .room-item:hover{background:#f7f7f7;}
+  .room-item.active{background:#e9f9ee;}
+  .room-avatar{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--line-green);
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-weight:bold;flex-shrink:0;
+  }
+  .room-info{flex:1;overflow:hidden;}
+  .room-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .room-last{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .room-del{
+    background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;padding:4px;
+  }
+  .room-del:hover{color:var(--danger);}
+  #sidebar-footer{
+    padding:10px;
+    border-top:1px solid var(--border);
+    display:flex;
+    gap:6px;
+  }
+  #sidebar-footer button{
+    flex:1;
+    padding:8px;
+    border:1px solid var(--border);
+    background:#fafafa;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:12px;
+  }
+  #sidebar-footer button:hover{background:#eee;}
+
+  /* ---------- メインチャット領域 ---------- */
+  #main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-room);}
+  #chat-header{
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  #chat-title{font-weight:bold;font-size:16px;}
+  #chat-actions{display:flex;gap:8px;}
+  #chat-actions button{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:8px;
+    padding:6px 10px;
+    cursor:pointer;
+    font-size:12px;
+  }
+  #chat-actions button:hover{background:#f2f2f2;}
+  #chat-actions button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
+  #chat-actions button.primary:hover{background:var(--line-green-dark);}
+
+  #messages{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .date-sep{
+    text-align:center;
+    color:#999;
+    font-size:12px;
+    margin:14px 0 6px;
+  }
+  .msg-row{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    max-width:78%;
+    align-self:flex-end;
+    position:relative;
+  }
+  .msg-row.selecting{cursor:pointer;}
+  .msg-checkbox{
+    width:18px;height:18px;margin-top:8px;flex-shrink:0;accent-color:var(--line-green);
+  }
+  .msg-bubble-wrap{display:flex;flex-direction:column;align-items:flex-end;flex:1;min-width:0;}
+  .msg-bubble{
+    background:var(--bubble-me);
+    padding:9px 12px;
+    border-radius:14px 14px 2px 14px;
+    font-size:14px;
+    line-height:1.5;
+    white-space:pre-wrap;
+    word-break:break-word;
+    max-width:100%;
+    box-shadow:0 1px 1px rgba(0,0,0,.05);
+  }
+  .msg-bubble.file-msg{background:var(--bubble-file);border:1px solid var(--border);}
+  .msg-row.selected .msg-bubble{outline:2px solid var(--line-green);}
+  .msg-time{font-size:11px;color:#999;margin-top:3px;}
+  .msg-row{position:relative;}
+  .msg-delete-btn{
+    background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
+    padding:4px 6px;opacity:0;transition:opacity .15s;align-self:flex-start;margin-top:6px;
+  }
+  .msg-row:hover .msg-delete-btn{opacity:1;}
+  .msg-delete-btn:hover{color:var(--danger);}
+  .msg-row.selecting .msg-delete-btn{display:none;}
+  .msg-img{max-width:220px;border-radius:10px;display:block;margin-top:4px;cursor:pointer;}
+  .file-chip{
+    display:flex;align-items:center;gap:8px;
+    background:#f6f6f6;border-radius:10px;padding:8px 10px;margin-top:4px;
+    font-size:13px;
+  }
+  .file-chip .file-icon{font-size:20px;}
+  .file-chip .file-meta{display:flex;flex-direction:column;}
+  .file-chip .file-name{font-weight:600;word-break:break-all;}
+  .file-chip .file-sub{color:#888;font-size:11px;}
+
+  #input-area{
+    background:#fff;
+    border-top:1px solid var(--border);
+    padding:10px 12px;
+    display:flex;
+    align-items:flex-end;
+    gap:8px;
+  }
+  #attach-btn{
+    background:#f0f0f0;
+    border:none;
+    border-radius:50%;
+    width:38px;height:38px;
+    font-size:18px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  #attach-btn:hover{background:#e2e2e2;}
+  #msg-input{
+    flex:1;
+    resize:none;
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:9px 14px;
+    font-size:14px;
+    max-height:120px;
+    line-height:1.4;
+    font-family:inherit;
+  }
+  #send-btn{
+    background:var(--line-green);
+    color:#fff;
+    border:none;
+    border-radius:18px;
+    padding:9px 16px;
+    font-size:14px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  #send-btn:hover{background:var(--line-green-dark);}
+  #send-btn:disabled{background:#ccc;cursor:not-allowed;}
+  #attach-preview{
+    display:flex;gap:6px;padding:0 12px;flex-wrap:wrap;
+  }
+  #attach-preview .pending-file{
+    background:#f0f0f0;border-radius:8px;padding:4px 8px;font-size:12px;
+    display:flex;align-items:center;gap:6px;
+  }
+  #attach-preview .pending-file button{border:none;background:none;cursor:pointer;color:#e64a4a;font-weight:bold;}
+  #var-hint{font-size:11px;color:#999;padding:2px 14px;}
+
+  /* 選択モードバー */
+  #selection-bar{
+    display:none;
+    background:#fff9d9;
+    border-top:1px solid #eadf9a;
+    padding:8px 14px;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13px;
+  }
+  #selection-bar.active{display:flex;}
+  #selection-bar .sel-actions{display:flex;gap:8px;}
+  #selection-bar button{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:6px;
+    padding:5px 10px;
+    cursor:pointer;
+    font-size:12px;
+  }
+  #selection-bar button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
+
+  /* ---------- モーダル共通 ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.4);
+    display:none;align-items:center;justify-content:center;z-index:100;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal-box{
+    background:#fff;border-radius:12px;width:90%;max-width:480px;
+    max-height:85vh;display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal-header{
+    padding:14px 16px;border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;font-weight:bold;
+  }
+  .modal-header button{border:none;background:none;font-size:18px;cursor:pointer;color:#888;}
+  .modal-body{padding:16px;overflow-y:auto;flex:1;}
+  .modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+  .modal-footer button{
+    padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;
+  }
+  .modal-footer button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
+  .modal-body input[type=text], .modal-body select{
+    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-top:4px;
+  }
+  .modal-body label{font-size:13px;color:#555;font-weight:600;display:block;margin-bottom:4px;margin-top:10px;}
+  #yaml-textarea{
+    width:100%;height:280px;font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:13px;
+    border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;
+  }
+  #yaml-error{color:var(--danger);font-size:12px;margin-top:8px;white-space:pre-wrap;display:none;}
+  #yaml-error.show{display:block;}
+  #export-preview{
+    width:100%;height:280px;font-family:monospace;font-size:12px;border:1px solid var(--border);
+    border-radius:8px;padding:10px;
+  }
+  .radio-group{display:flex;gap:14px;font-size:13px;margin-top:6px;}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;
+    z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+
+  @media (max-width:768px){
+    #app{max-width:100%;box-shadow:none;}
+    #sidebar{
+      position:absolute;left:0;top:0;bottom:0;z-index:50;
+      transform:translateX(-100%);transition:transform .25s;width:80%;max-width:300px;
+    }
+    #sidebar.open{transform:translateX(0);}
+    #menu-btn{display:inline-block !important;}
+    .msg-row{max-width:88%;}
+  }
+  #menu-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;margin-right:8px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== サイドバー: チャットルーム一覧 ===== -->
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <span>チャット一覧</span>
+      <button id="new-room-btn" title="新規ルーム作成">＋ ルーム</button>
+    </div>
+    <div id="room-list"></div>
+    <div id="sidebar-footer">
+      <button id="open-yaml-btn">⚙ YAML設定</button>
+    </div>
+  </div>
+
+  <!-- ===== メイン: チャット表示 ===== -->
+  <div id="main">
+    <div id="chat-header">
+      <div style="display:flex;align-items:center;">
+        <button id="menu-btn">☰</button>
+        <span id="chat-title">-</span>
+      </div>
+      <div id="chat-actions">
+        <button id="select-mode-btn">選択</button>
+        <button id="export-room-btn">ルーム全体エクスポート</button>
+        <button id="rename-room-btn">名前変更</button>
+      </div>
+    </div>
+
+    <div id="messages"></div>
+
+    <div id="selection-bar">
+      <span id="selection-count">0件選択中</span>
+      <div class="sel-actions">
+        <button id="sel-export-btn" class="primary">エクスポート</button>
+        <button id="sel-cancel-btn">キャンセル</button>
+      </div>
+    </div>
+
+    <div id="attach-preview"></div>
+    <div id="var-hint">使える日時変数: {{YYYY-MM-DD}} {{YYYY/MM/DD}} {{HH:mm}}</div>
+    <div id="input-area">
+      <button id="attach-btn" title="ファイル添付">📎</button>
+      <input type="file" id="file-input" multiple style="display:none;">
+      <textarea id="msg-input" rows="1" placeholder="メモを入力... (Shift+Enterで改行)"></textarea>
+      <button id="send-btn">送信</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 新規ルーム ===== -->
+<div class="modal-overlay" id="modal-new-room">
+  <div class="modal-box">
+    <div class="modal-header"><span>新しいチャットルーム</span><button class="close-x" data-close="modal-new-room">×</button></div>
+    <div class="modal-body">
+      <label>ルーム名</label>
+      <input type="text" id="new-room-name" placeholder="例: 買い物メモ">
+    </div>
+    <div class="modal-footer">
+      <button data-close="modal-new-room">キャンセル</button>
+      <button class="primary" id="confirm-new-room">作成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: ルーム名変更 ===== -->
+<div class="modal-overlay" id="modal-rename-room">
+  <div class="modal-box">
+    <div class="modal-header"><span>ルーム名を変更</span><button class="close-x" data-close="modal-rename-room">×</button></div>
+    <div class="modal-body">
+      <label>新しい名前</label>
+      <input type="text" id="rename-room-input">
+    </div>
+    <div class="modal-footer">
+      <button data-close="modal-rename-room">キャンセル</button>
+      <button class="primary" id="confirm-rename-room">変更</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: YAML設定 ===== -->
+<div class="modal-overlay" id="modal-yaml">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header"><span>YAML設定</span><button class="close-x" data-close="modal-yaml">×</button></div>
+    <div class="modal-body">
+      <textarea id="yaml-textarea" spellcheck="false"></textarea>
+      <div id="yaml-error"></div>
+    </div>
+    <div class="modal-footer">
+      <button id="yaml-reset-btn">初期値に戻す</button>
+      <button data-close="modal-yaml">閉じる</button>
+      <button class="primary" id="yaml-save-btn">保存して適用</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: エクスポート ===== -->
+<div class="modal-overlay" id="modal-export">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-header"><span>Markdownエクスポート</span><button class="close-x" data-close="modal-export">×</button></div>
+    <div class="modal-body">
+      <textarea id="export-preview" readonly></textarea>
+    </div>
+    <div class="modal-footer">
+      <button id="export-copy-btn">コピー</button>
+      <button class="primary" id="export-download-btn">.mdをダウンロード</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 画像拡大 ===== -->
+<div class="modal-overlay" id="modal-image">
+  <div class="modal-box" style="max-width:90%;background:transparent;box-shadow:none;">
+    <div class="modal-header" style="background:#fff;"><span>プレビュー</span><button class="close-x" data-close="modal-image">×</button></div>
+    <div class="modal-body" style="background:#fff;text-align:center;">
+      <img id="image-preview-full" style="max-width:100%;max-height:70vh;">
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   LINE風メモアプリ  - 単一HTMLで完結する保守しやすい構成
+   構成:
+     1. ストレージ層 (Storage)       : localStorage への安全な読み書き
+     2. 状態管理層 (State)           : アプリ全体の状態を保持
+     3. ユーティリティ (Utils)       : 日付処理・簡易YAML・ファイル処理
+     4. レンダリング層 (Render)      : DOM描画
+     5. イベントハンドラ層 (Handlers): ユーザー操作の処理
+     6. 初期化 (Init)
+   ========================================================================= */
+
+/* ------------------------------------------------------------------ *
+ * 1. ストレージ層
+ * ------------------------------------------------------------------ */
+const STORAGE_KEY = 'lineMemoApp_data_v1';
+const STORAGE_KEY_BACKUP = 'lineMemoApp_data_v1_backup';
+
+const Storage = {
+  /**
+   * state を安全に保存する。保存直前のバックアップも保持し、
+   * 次回読み込み時に壊れたデータを検知したらバックアップから復元できるようにする。
+   */
+  save(state) {
+    try {
+      const json = JSON.stringify(state);
+      // 直前の正常データをバックアップとして退避
+      const prev = localStorage.getItem(STORAGE_KEY);
+      if (prev) localStorage.setItem(STORAGE_KEY_BACKUP, prev);
+      localStorage.setItem(STORAGE_KEY, json);
+      return true;
+    } catch (e) {
+      console.error('保存に失敗しました', e);
+      Utils.toast('保存に失敗しました（容量制限の可能性があります）');
+      return false;
+    }
+  },
+
+  /**
+   * state を読み込む。壊れている場合はバックアップ、
+   * それも失敗したら初期状態を返す。
+   */
+  load() {
+    const tryParse = (raw) => {
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.rooms)) {
+          return parsed;
+        }
+        return null;
+      } catch (e) {
+        return null;
+      }
+    };
+    let data = tryParse(localStorage.getItem(STORAGE_KEY));
+    if (!data) {
+      data = tryParse(localStorage.getItem(STORAGE_KEY_BACKUP));
+      if (data) Utils.toast('保存データの一部が壊れていたためバックアップから復元しました');
+    }
+    if (!data) {
+      data = null; // 呼び出し側で初期状態を生成
+    }
+    return data;
+  }
+};
+
+/* ------------------------------------------------------------------ *
+ * 3. ユーティリティ
+ * ------------------------------------------------------------------ */
+const Utils = {
+  uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  },
+
+  pad(n) { return n.toString().padStart(2, '0'); },
+
+  /** 日時変数を実際の値へ展開する ({{YYYY-MM-DD}} 等) */
+  expandDateVariables(text) {
+    const d = new Date();
+    const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
+    const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
+    return text
+      .replace(/\{\{\s*YYYY-MM-DD\s*\}\}/g, `${y}-${m}-${day}`)
+      .replace(/\{\{\s*YYYY\/MM\/DD\s*\}\}/g, `${y}/${m}/${day}`)
+      .replace(/\{\{\s*HH:mm\s*\}\}/g, `${hh}:${mm}`);
+  },
+
+  formatDate(timestamp, pattern) {
+    const d = new Date(timestamp);
+    const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
+    const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
+    if (pattern === 'YYYY/MM/DD') return `${y}/${m}/${day}`;
+    return `${y}-${m}-${day}`; // デフォルト YYYY-MM-DD
+  },
+  formatTime(timestamp) {
+    const d = new Date(timestamp);
+    return `${Utils.pad(d.getHours())}:${Utils.pad(d.getMinutes())}`;
+  },
+
+  formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  },
+
+  escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  },
+
+  toast(message) {
+    const el = document.getElementById('toast');
+    el.textContent = message;
+    el.classList.add('show');
+    clearTimeout(Utils._toastTimer);
+    Utils._toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  },
+
+  /**
+   * 依存ライブラリ無しで動く最小構成のYAMLサブセットパーサー。
+   * 対応: ネスト(インデント), 文字列/数値/真偽値, ハイフンによる配列。
+   * 複雑なYAML全機能はサポートしないが、設定用途には十分。
+   */
+  parseSimpleYAML(text) {
+    const lines = text.split('\n').map(l => l.replace(/\t/g, '  '));
+    const root = {};
+    const stack = [{ indent: -1, node: root }];
+
+    const parseScalar = (raw) => {
+      let v = raw.trim();
+      if (v === '') return '';
+      if (/^".*"$/.test(v) || /^'.*'$/.test(v)) return v.slice(1, -1);
+      if (v === 'true') return true;
+      if (v === 'false') return false;
+      if (v === 'null' || v === '~') return null;
+      if (/^-?\d+(\.\d+)?$/.test(v)) return Number(v);
+      return v;
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const rawLine = lines[i];
+      if (!rawLine.trim() || rawLine.trim().startsWith('#')) continue;
+      const indent = rawLine.match(/^(\s*)/)[1].length;
+      let content = rawLine.trim();
+
+      while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
+        stack.pop();
+      }
+      const parent = stack[stack.length - 1].node;
+
+      if (content.startsWith('- ')) {
+        // 配列要素
+        if (!Array.isArray(parent.__arr)) {
+          throw new Error(`${i + 1}行目: 配列の親キーが見つかりません -> "${rawLine}"`);
+        }
+        parent.__arr.push(parseScalar(content.slice(2)));
+        continue;
+      }
+
+      const sepIdx = content.indexOf(':');
+      if (sepIdx === -1) {
+        throw new Error(`${i + 1}行目: "key: value" の形式ではありません -> "${rawLine}"`);
+      }
+      const key = content.slice(0, sepIdx).trim();
+      const valueStr = content.slice(sepIdx + 1).trim();
+      if (!key) {
+        throw new Error(`${i + 1}行目: キーが空です -> "${rawLine}"`);
+      }
+
+      if (valueStr === '') {
+        // 次の行がネストしたオブジェクトか配列かは後続行で判定
+        const child = {};
+        parent[key] = child;
+        stack.push({ indent, node: child });
+        // 配列判定用にプレースホルダ
+        child.__pendingArrayCheck = true;
+        // 次の非空行を見て配列かどうか判定
+        for (let j = i + 1; j < lines.length; j++) {
+          if (!lines[j].trim()) continue;
+          if (lines[j].trim().startsWith('- ') && lines[j].match(/^(\s*)/)[1].length > indent) {
+            const arr = [];
+            parent[key] = arr;
+            stack[stack.length - 1].node = { __arr: arr };
+            // 上書き: 実際の値は __arr 経由で配列に入れる
+            Object.defineProperty(stack[stack.length - 1], 'arrRef', { value: arr, configurable: true });
+            // 置換: 親ノードのキーは配列そのものを指す
+            parent[key] = arr;
+            stack[stack.length - 1].node.__arr = arr;
+          }
+          break;
+        }
+        delete child.__pendingArrayCheck;
+      } else {
+        parent[key] = parseScalar(valueStr);
+      }
+    }
+
+    // クリーンアップ: __arr 補助キーを除去
+    const clean = (obj) => {
+      if (Array.isArray(obj)) return obj;
+      if (obj && typeof obj === 'object') {
+        if ('__arr' in obj) return clean(obj.__arr);
+        const out = {};
+        for (const k in obj) {
+          if (k === '__arr' || k === '__pendingArrayCheck') continue;
+          out[k] = clean(obj[k]);
+        }
+        return out;
+      }
+      return obj;
+    };
+    return clean(root);
+  },
+
+  /** File を dataURL として読み込む(画像プレビュー用) */
+  readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+};
+
+
+/* ------------------------------------------------------------------ *
+ * 2. 状態管理層
+ * ------------------------------------------------------------------ */
+const DEFAULT_YAML = `display:
+  showTimestamp: true
+  dateFormat: "YYYY-MM-DD"
+  timeFormat: "HH:mm"
+format:
+  bubbleStyle: "rounded"
+export:
+  includeRoomName: true
+  includeExportDate: true
+  header: "# メモエクスポート"
+`;
+
+function createDefaultState() {
+  const now = Date.now();
+  const defaultRoomId = Utils.uid();
+  return {
+    rooms: [
+      { id: defaultRoomId, name: 'デフォルトルーム', createdAt: now }
+    ],
+    messagesByRoom: {
+      [defaultRoomId]: []
+    },
+    currentRoomId: defaultRoomId,
+    yamlText: DEFAULT_YAML
+  };
+}
+
+let state = Storage.load() || createDefaultState();
+// 念のため整合性チェック（ルームが1件も無い/現在ルームが存在しない等）
+(function ensureIntegrity() {
+  if (!Array.isArray(state.rooms) || state.rooms.length === 0) {
+    state = createDefaultState();
+  }
+  if (!state.messagesByRoom || typeof state.messagesByRoom !== 'object') {
+    state.messagesByRoom = {};
+  }
+  state.rooms.forEach(r => {
+    if (!Array.isArray(state.messagesByRoom[r.id])) state.messagesByRoom[r.id] = [];
+  });
+  if (!state.rooms.find(r => r.id === state.currentRoomId)) {
+    state.currentRoomId = state.rooms[0].id;
+  }
+  if (typeof state.yamlText !== 'string') state.yamlText = DEFAULT_YAML;
+})();
+
+let yamlConfig = {};
+let selectionMode = false;
+let selectedIds = new Set();
+let pendingAttachments = []; // 送信待ちの添付ファイル
+
+function persist() {
+  Storage.save(state);
+}
+
+/* ------------------------------------------------------------------ *
+ * YAML設定の適用
+ * ------------------------------------------------------------------ */
+function applyYamlConfig() {
+  try {
+    const parsed = Utils.parseSimpleYAML(state.yamlText);
+    yamlConfig = parsed || {};
+    document.getElementById('yaml-error').classList.remove('show');
+    return true;
+  } catch (e) {
+    yamlConfig = yamlConfig || {}; // 直前の設定を維持し、アプリを落とさない
+    const errEl = document.getElementById('yaml-error');
+    errEl.textContent = 'YAMLエラー: ' + e.message;
+    errEl.classList.add('show');
+    return false;
+  }
+}
+
+function getYamlSetting(path, fallback) {
+  const parts = path.split('.');
+  let cur = yamlConfig;
+  for (const p of parts) {
+    if (cur && typeof cur === 'object' && p in cur) cur = cur[p];
+    else return fallback;
+  }
+  return cur === undefined ? fallback : cur;
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. レンダリング層
+ * ------------------------------------------------------------------ */
+function renderRooms() {
+  const listEl = document.getElementById('room-list');
+  listEl.innerHTML = '';
+  state.rooms.forEach(room => {
+    const msgs = state.messagesByRoom[room.id] || [];
+    const last = msgs[msgs.length - 1];
+    const item = document.createElement('div');
+    item.className = 'room-item' + (room.id === state.currentRoomId ? ' active' : '');
+    item.innerHTML = `
+      <div class="room-avatar">${Utils.escapeHtml(room.name.slice(0,1) || '?')}</div>
+      <div class="room-info">
+        <div class="room-name">${Utils.escapeHtml(room.name)}</div>
+        <div class="room-last">${last ? Utils.escapeHtml(previewText(last)) : 'まだメモがありません'}</div>
+      </div>
+      <button class="room-del" data-room-id="${room.id}" title="ルーム削除">🗑</button>
+    `;
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.room-del')) return;
+      switchRoom(room.id);
+    });
+    item.querySelector('.room-del').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteRoom(room.id);
+    });
+    listEl.appendChild(item);
+  });
+}
+
+function previewText(msg) {
+  if (msg.text) return msg.text.slice(0, 20);
+  if (msg.attachments && msg.attachments.length) return '📎 ' + msg.attachments[0].name;
+  return '';
+}
+
+function renderMessages() {
+  const box = document.getElementById('messages');
+  box.innerHTML = '';
+  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const showTimestamp = getYamlSetting('display.showTimestamp', true);
+  const dateFormat = getYamlSetting('display.dateFormat', 'YYYY-MM-DD');
+
+  let lastDateLabel = null;
+  msgs.forEach(msg => {
+    const dateLabel = Utils.formatDate(msg.createdAt, dateFormat);
+    if (dateLabel !== lastDateLabel) {
+      const sep = document.createElement('div');
+      sep.className = 'date-sep';
+      sep.textContent = dateLabel;
+      box.appendChild(sep);
+      lastDateLabel = dateLabel;
+    }
+    box.appendChild(renderMessageRow(msg, showTimestamp));
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function renderMessageRow(msg, showTimestamp) {
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (selectionMode ? ' selecting' : '') + (selectedIds.has(msg.id) ? ' selected' : '');
+  row.dataset.id = msg.id;
+
+  let checkboxHtml = '';
+  if (selectionMode) {
+    checkboxHtml = `<input type="checkbox" class="msg-checkbox" ${selectedIds.has(msg.id) ? 'checked' : ''}>`;
+  }
+
+  const bubbleWrap = document.createElement('div');
+  bubbleWrap.className = 'msg-bubble-wrap';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble' + (!msg.text && msg.attachments && msg.attachments.length ? ' file-msg' : '');
+
+  let innerHtml = '';
+  if (msg.text) {
+    innerHtml += `<div>${Utils.escapeHtml(msg.text)}</div>`;
+  }
+  (msg.attachments || []).forEach(att => {
+    if (att.isImage && att.dataUrl) {
+      innerHtml += `<img class="msg-img" src="${att.dataUrl}" alt="${Utils.escapeHtml(att.name)}">`;
+    } else {
+      innerHtml += `
+        <div class="file-chip">
+          <div class="file-icon">📄</div>
+          <div class="file-meta">
+            <div class="file-name">${Utils.escapeHtml(att.name)}</div>
+            <div class="file-sub">${Utils.escapeHtml(att.type || '不明な形式')} ・ ${Utils.formatBytes(att.size)}</div>
+          </div>
+        </div>`;
+    }
+  });
+  bubble.innerHTML = innerHtml;
+  bubbleWrap.appendChild(bubble);
+
+  if (showTimestamp) {
+    const timeEl = document.createElement('div');
+    timeEl.className = 'msg-time';
+    timeEl.textContent = Utils.formatTime(msg.createdAt);
+    bubbleWrap.appendChild(timeEl);
+  }
+
+  row.innerHTML = checkboxHtml;
+  row.appendChild(bubbleWrap);
+
+  // 削除ボタン（選択モード中は非表示、ホバー時のみ表示）
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'msg-delete-btn';
+  deleteBtn.title = 'このメッセージを削除';
+  deleteBtn.textContent = '🗑';
+  deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteMessage(msg.id);
+  });
+  row.appendChild(deleteBtn);
+
+  // 画像クリックで拡大表示
+  row.querySelectorAll('.msg-img').forEach(img => {
+    img.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('image-preview-full').src = img.src;
+      openModal('modal-image');
+    });
+  });
+
+  row.addEventListener('click', (e) => {
+    if (!selectionMode) return;
+    toggleSelect(msg.id);
+  });
+
+  return row;
+}
+
+function renderHeader() {
+  const room = state.rooms.find(r => r.id === state.currentRoomId);
+  document.getElementById('chat-title').textContent = room ? room.name : '';
+}
+
+function renderAll() {
+  renderRooms();
+  renderHeader();
+  renderMessages();
+  renderSelectionBar();
+  renderAttachPreview();
+}
+
+/* ------------------------------------------------------------------ *
+ * 5. イベントハンドラ / 主要ロジック
+ * ------------------------------------------------------------------ */
+
+// ---- ルーム操作 ----
+function switchRoom(roomId) {
+  state.currentRoomId = roomId;
+  selectionMode = false;
+  selectedIds.clear();
+  persist();
+  renderAll();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function createRoom(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) {
+    Utils.toast('ルーム名を入力してください');
+    return;
+  }
+  const id = Utils.uid();
+  state.rooms.push({ id, name: trimmed, createdAt: Date.now() });
+  state.messagesByRoom[id] = [];
+  state.currentRoomId = id;
+  persist();
+  renderAll();
+}
+
+function deleteRoom(roomId) {
+  if (state.rooms.length <= 1) {
+    Utils.toast('最後のルームは削除できません');
+    return;
+  }
+  if (!confirm('このルームと中のメモを全て削除します。よろしいですか？')) return;
+  state.rooms = state.rooms.filter(r => r.id !== roomId);
+  delete state.messagesByRoom[roomId];
+  if (state.currentRoomId === roomId) {
+    state.currentRoomId = state.rooms[0].id;
+  }
+  persist();
+  renderAll();
+}
+
+function renameRoom(roomId, newName) {
+  const trimmed = (newName || '').trim();
+  if (!trimmed) {
+    Utils.toast('ルーム名を入力してください');
+    return;
+  }
+  const room = state.rooms.find(r => r.id === roomId);
+  if (room) room.name = trimmed;
+  persist();
+  renderAll();
+}
+
+// ---- メッセージ送信 ----
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const rawText = input.value;
+  const text = Utils.expandDateVariables(rawText).trim();
+
+  if (!text && pendingAttachments.length === 0) {
+    Utils.toast('メモが空です。テキストまたはファイルを追加してください');
+    return;
+  }
+
+  const msg = {
+    id: Utils.uid(),
+    roomId: state.currentRoomId,
+    text: text,
+    attachments: pendingAttachments.slice(),
+    createdAt: Date.now()
+  };
+
+  state.messagesByRoom[state.currentRoomId].push(msg);
+  pendingAttachments = [];
+  input.value = '';
+  autoResizeTextarea(input);
+  persist();
+  renderAll();
+}
+
+// ---- メッセージ単体削除 ----
+function deleteMessage(msgId) {
+  if (!confirm('このメモを削除しますか？')) return;
+  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  state.messagesByRoom[state.currentRoomId] = msgs.filter(m => m.id !== msgId);
+  selectedIds.delete(msgId);
+  persist();
+  renderAll();
+  Utils.toast('メモを削除しました');
+}
+
+// ---- ファイル添付 ----
+async function handleFilesSelected(fileList) {
+  const files = Array.from(fileList);
+  for (const file of files) {
+    try {
+      const isImage = file.type.startsWith('image/');
+      const att = {
+        id: Utils.uid(),
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        size: file.size,
+        isImage: isImage,
+        dataUrl: null
+      };
+      if (isImage) {
+        // 画像のみ dataURL を保持してプレビュー・永続化する（非画像は容量節約のためメタ情報のみ保存）
+        att.dataUrl = await Utils.readFileAsDataURL(file);
+      }
+      pendingAttachments.push(att);
+    } catch (e) {
+      console.error(e);
+      Utils.toast(`ファイル "${file.name}" の読み込みに失敗しました`);
+    }
+  }
+  renderAttachPreview();
+}
+
+function renderAttachPreview() {
+  const box = document.getElementById('attach-preview');
+  box.innerHTML = '';
+  pendingAttachments.forEach(att => {
+    const chip = document.createElement('div');
+    chip.className = 'pending-file';
+    chip.innerHTML = `<span>${att.isImage ? '🖼' : '📄'} ${Utils.escapeHtml(att.name)}</span><button>×</button>`;
+    chip.querySelector('button').addEventListener('click', () => {
+      pendingAttachments = pendingAttachments.filter(a => a.id !== att.id);
+      renderAttachPreview();
+    });
+    box.appendChild(chip);
+  });
+}
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ---- 選択モード ----
+function toggleSelectionMode() {
+  selectionMode = !selectionMode;
+  if (!selectionMode) selectedIds.clear();
+  renderAll();
+}
+
+function toggleSelect(msgId) {
+  if (selectedIds.has(msgId)) selectedIds.delete(msgId);
+  else selectedIds.add(msgId);
+  renderMessages();
+  renderSelectionBar();
+}
+
+function renderSelectionBar() {
+  const bar = document.getElementById('selection-bar');
+  if (selectionMode) {
+    bar.classList.add('active');
+    document.getElementById('selection-count').textContent = `${selectedIds.size}件選択中`;
+  } else {
+    bar.classList.remove('active');
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Markdownエクスポート
+ * ------------------------------------------------------------------ */
+function buildMarkdown(messages, scopeLabel) {
+  const room = state.rooms.find(r => r.id === state.currentRoomId);
+  const includeRoomName = getYamlSetting('export.includeRoomName', true);
+  const includeExportDate = getYamlSetting('export.includeExportDate', true);
+  const header = getYamlSetting('export.header', '# メモエクスポート');
+  const dateFormat = getYamlSetting('display.dateFormat', 'YYYY-MM-DD');
+
+  let md = '';
+  md += `${header}\n\n`;
+  if (includeRoomName && room) md += `- ルーム: ${room.name}\n`;
+  md += `- 種別: ${scopeLabel}\n`;
+  if (includeExportDate) md += `- エクスポート日時: ${Utils.formatDate(Date.now(), dateFormat)} ${Utils.formatTime(Date.now())}\n`;
+  md += `\n---\n\n`;
+
+  let lastDate = null;
+  messages.forEach(msg => {
+    const dLabel = Utils.formatDate(msg.createdAt, dateFormat);
+    if (dLabel !== lastDate) {
+      md += `## ${dLabel}\n\n`;
+      lastDate = dLabel;
+    }
+    md += `**${Utils.formatTime(msg.createdAt)}**\n\n`;
+    if (msg.text) md += `${msg.text}\n\n`;
+    (msg.attachments || []).forEach(att => {
+      md += `![[${att.name}]]\n\n`;
+    });
+  });
+  return md;
+}
+
+function exportMessages(scope) {
+  const allMsgs = state.messagesByRoom[state.currentRoomId] || [];
+  let target = [];
+  let label = '';
+  if (scope === 'room') {
+    target = allMsgs;
+    label = 'チャットルーム全体';
+  } else {
+    target = allMsgs.filter(m => selectedIds.has(m.id));
+    label = target.length > 1 ? `選択メッセージ ${target.length}件` : '選択メッセージ 1件';
+  }
+  if (target.length === 0) {
+    Utils.toast('エクスポート対象のメッセージがありません');
+    return;
+  }
+  const md = buildMarkdown(target, label);
+  document.getElementById('export-preview').value = md;
+  openModal('modal-export');
+}
+
+function downloadMarkdown(content, filename) {
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ------------------------------------------------------------------ *
+ * モーダル共通操作
+ * ------------------------------------------------------------------ */
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+/* ------------------------------------------------------------------ *
+ * 6. 初期化 & イベント登録
+ * ------------------------------------------------------------------ */
+function initEventListeners() {
+  document.getElementById('new-room-btn').addEventListener('click', () => {
+    document.getElementById('new-room-name').value = '';
+    openModal('modal-new-room');
+  });
+  document.getElementById('confirm-new-room').addEventListener('click', () => {
+    createRoom(document.getElementById('new-room-name').value);
+    closeModal('modal-new-room');
+  });
+
+  document.getElementById('rename-room-btn').addEventListener('click', () => {
+    const room = state.rooms.find(r => r.id === state.currentRoomId);
+    document.getElementById('rename-room-input').value = room ? room.name : '';
+    openModal('modal-rename-room');
+  });
+  document.getElementById('confirm-rename-room').addEventListener('click', () => {
+    renameRoom(state.currentRoomId, document.getElementById('rename-room-input').value);
+    closeModal('modal-rename-room');
+  });
+
+  document.querySelectorAll('.close-x, [data-close]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  });
+
+  // メッセージ入力
+  const input = document.getElementById('msg-input');
+  input.addEventListener('input', () => autoResizeTextarea(input));
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  document.getElementById('send-btn').addEventListener('click', sendMessage);
+
+  // ファイル添付
+  document.getElementById('attach-btn').addEventListener('click', () => {
+    document.getElementById('file-input').click();
+  });
+  document.getElementById('file-input').addEventListener('change', (e) => {
+    handleFilesSelected(e.target.files);
+    e.target.value = '';
+  });
+
+  // 選択モード
+  document.getElementById('select-mode-btn').addEventListener('click', toggleSelectionMode);
+  document.getElementById('sel-cancel-btn').addEventListener('click', () => {
+    selectionMode = false;
+    selectedIds.clear();
+    renderAll();
+  });
+  document.getElementById('sel-export-btn').addEventListener('click', () => exportMessages('selection'));
+  document.getElementById('export-room-btn').addEventListener('click', () => exportMessages('room'));
+
+  document.getElementById('export-copy-btn').addEventListener('click', () => {
+    const ta = document.getElementById('export-preview');
+    ta.select();
+    document.execCommand('copy');
+    Utils.toast('コピーしました');
+  });
+  document.getElementById('export-download-btn').addEventListener('click', () => {
+    const room = state.rooms.find(r => r.id === state.currentRoomId);
+    const filename = `${room ? room.name : 'memo'}_${Utils.formatDate(Date.now(),'YYYY-MM-DD')}.md`;
+    downloadMarkdown(document.getElementById('export-preview').value, filename);
+  });
+
+  // YAML設定
+  document.getElementById('open-yaml-btn').addEventListener('click', () => {
+    document.getElementById('yaml-textarea').value = state.yamlText;
+    document.getElementById('yaml-error').classList.remove('show');
+    openModal('modal-yaml');
+  });
+  document.getElementById('yaml-save-btn').addEventListener('click', () => {
+    const text = document.getElementById('yaml-textarea').value;
+    const backup = state.yamlText;
+    state.yamlText = text;
+    const ok = applyYamlConfig();
+    if (ok) {
+      persist();
+      renderAll();
+      Utils.toast('YAML設定を保存しました');
+      closeModal('modal-yaml');
+    } else {
+      // エラー時は state を元に戻し、アプリを壊さない
+      state.yamlText = backup;
+    }
+  });
+  document.getElementById('yaml-reset-btn').addEventListener('click', () => {
+    document.getElementById('yaml-textarea').value = DEFAULT_YAML;
+  });
+
+  // モバイル用サイドバー開閉
+  document.getElementById('menu-btn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+}
+
+function init() {
+  applyYamlConfig();
+  initEventListeners();
+  renderAll();
+  autoResizeTextarea(document.getElementById('msg-input'));
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ---- PWA: Service Worker登録 ----
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('Service Worker登録に失敗しました', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
