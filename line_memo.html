@@ -179,6 +179,8 @@
     box-shadow:0 1px 1px rgba(0,0,0,.05);
   }
   .msg-bubble.file-msg{background:var(--bubble-file);border:1px solid var(--border);}
+  .msg-link{color:#0b57d0;text-decoration:underline;word-break:break-all;}
+  .msg-link:active{opacity:0.7;}
   .msg-row.selected .msg-bubble{outline:2px solid var(--line-green);}
   .msg-time{font-size:11px;color:#999;margin-top:3px;}
   .msg-actions{
@@ -654,6 +656,23 @@ const Utils = {
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   },
 
+  // テキスト中のURL/URIをリンク化する（http, https, obsidian等の任意のスキームに対応）
+  linkifyHtml(str) {
+    const escaped = Utils.escapeHtml(str);
+    const urlPattern = /((?:[a-zA-Z][a-zA-Z0-9+.-]*):\/\/[A-Za-z0-9\-._~:/?#\[\]@!$&'*+,;=%]+)/g;
+    return escaped.replace(urlPattern, (match) => {
+      // 末尾の句読点・括弧などはリンクに含めない
+      let url = match;
+      let trailing = '';
+      const trailingChars = ['.', ',', ')', ']', '}'];
+      while (url.length > 0 && trailingChars.includes(url[url.length - 1])) {
+        trailing = url[url.length - 1] + trailing;
+        url = url.slice(0, -1);
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="msg-link">${url}</a>${trailing}`;
+    });
+  },
+
   toast(message) {
     const el = document.getElementById('toast');
     el.textContent = message;
@@ -853,7 +872,7 @@ function renderMessageRow(msg, showTimestamp) {
 
   let innerHtml = '';
   if (msg.text) {
-    innerHtml += `<div>${Utils.escapeHtml(msg.text)}</div>`;
+    innerHtml += `<div>${Utils.linkifyHtml(msg.text)}</div>`;
   }
   (msg.attachments || []).forEach(att => {
     if (att.isImage && att.dataUrl) {
