@@ -808,6 +808,13 @@ function persist() {
   Sync.scheduleUpload();
 }
 
+// ルーム切替・選択解除など「見た目の操作」だけを保存する関数。
+// updatedAt を更新しないため、同期時に「閲覧しただけ」で
+// 他端末のデータを上書きしてしまう不具合を防ぐ。
+function persistLocalOnly() {
+  Storage.save(state);
+}
+
 /* ------------------------------------------------------------------ *
  * クラウド同期（GAS + Googleドライブ）
  * ---------------
@@ -1142,7 +1149,7 @@ function switchRoom(roomId) {
   state.currentRoomId = roomId;
   selectionMode = false;
   selectedIds.clear();
-  persist();
+  persistLocalOnly();
   renderAll();
   document.getElementById('sidebar').classList.remove('open');
 }
