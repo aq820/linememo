@@ -106,6 +106,14 @@
     font-size:12px;
   }
   #sidebar-footer button:hover{background:#eee;}
+  #sync-status-bar{
+    padding:6px 10px;
+    font-size:11px;
+    color:#888;
+    text-align:center;
+    border-top:1px solid var(--border);
+    background:#fafafa;
+  }
 
   /* ---------- メインチャット領域 ---------- */
   #main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-room);}
@@ -398,6 +406,10 @@
     <div id="room-list"></div>
     <div id="sidebar-footer">
       <button id="open-yaml-btn">⚙ YAML設定</button>
+      <button id="open-sync-btn">☁ 同期設定</button>
+    </div>
+    <div id="sync-status-bar">
+      <span id="sync-status">未設定</span>
     </div>
   </div>
 
@@ -502,6 +514,33 @@
       <button id="yaml-reset-btn">初期値に戻す</button>
       <button data-close="modal-yaml">閉じる</button>
       <button class="primary" id="yaml-save-btn">保存して適用</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 同期設定 ===== -->
+<div class="modal-overlay" id="modal-sync">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header"><span>クラウド同期設定（GAS）</span><button class="close-x" data-close="modal-sync">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:#666;margin-top:0;line-height:1.6;">
+        Google Apps ScriptのWebアプリURLと合言葉（トークン）を設定すると、複数のデバイス間でメモが自動的に同期されます。
+      </p>
+      <label>
+        <input type="checkbox" id="sync-enabled-checkbox"> 同期を有効にする
+      </label>
+      <label>Web App URL（.../exec）</label>
+      <input type="text" id="sync-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+      <label>トークン（合言葉）</label>
+      <input type="text" id="sync-token-input" placeholder="GAS側で設定したSECRET_TOKENと同じ値">
+      <p style="font-size:11px;color:#999;margin-top:10px;">
+        ※ 設定後、下のボタンで接続確認ができます。
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button id="sync-test-btn">接続テスト</button>
+      <button data-close="modal-sync">閉じる</button>
+      <button class="primary" id="sync-save-btn">保存</button>
     </div>
   </div>
 </div>
@@ -764,8 +803,128 @@ let selectedIds = new Set();
 let pendingAttachments = []; // 送信待ちの添付ファイル
 
 function persist() {
+  state.updatedAt = Date.now();
   Storage.save(state);
+  Sync.scheduleUpload();
 }
+
+/* ------------------------------------------------------------------ *
+ * クラウド同期（GAS + Googleドライブ）
+ * ---------------
+ * - persist() のたびに一定時間後に自動アップロード（デバウンス）
+ * - 起動時・タブ復帰時・30秒おきに自動でダウンロードして最新反映
+ * - updatedAt を比較し、新しい方を採用する（Last-Write-Wins）
+ * ------------------------------------------------------------------ */
+const SYNC_CONFIG_KEY = 'lineMemoSyncConfig_v1';
+const Sync = {
+  config: { url: '', token: '', enabled: false },
+  uploadTimer: null,
+  pollTimer: null,
+  syncing: false,
+
+  loadConfig() {
+    try {
+      const raw = localStorage.getItem(SYNC_CONFIG_KEY);
+      if (raw) Sync.config = Object.assign(Sync.config, JSON.parse(raw));
+    } catch (e) { /* noop */ }
+  },
+  saveConfig() {
+    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(Sync.config));
+  },
+  setStatus(text) {
+    const el = document.getElementById('sync-status');
+    if (el) el.textContent = text;
+  },
+
+  scheduleUpload() {
+    if (!Sync.config.enabled || !Sync.config.url) return;
+    clearTimeout(Sync.uploadTimer);
+    Sync.uploadTimer = setTimeout(Sync.upload, 1500);
+  },
+
+  async upload() {
+    if (!Sync.config.enabled || !Sync.config.url || Sync.syncing) return;
+    Sync.syncing = true;
+    Sync.setStatus('同期中…');
+    try {
+      const res = await fetch(Sync.config.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          token: Sync.config.token,
+          updatedAt: state.updatedAt || Date.now(),
+          payload: { rooms: state.rooms, messagesByRoom: state.messagesByRoom, currentRoomId: state.currentRoomId, yamlText: state.yamlText }
+        })
+      });
+      const json = await res.json();
+      if (json.error) {
+        Sync.setStatus('同期エラー: ' + json.error);
+      } else if (json.conflict) {
+        // サーバー側が新しい場合はサーバーデータを取り込む
+        Sync.applyRemote(json.updatedAt, json.payload);
+        Sync.setStatus('同期済み（他端末優先）');
+      } else {
+        Sync.setStatus('同期済み');
+      }
+    } catch (e) {
+      Sync.setStatus('同期失敗（オフライン？）');
+    } finally {
+      Sync.syncing = false;
+    }
+  },
+
+  async download() {
+    if (!Sync.config.enabled || !Sync.config.url || Sync.syncing) return;
+    Sync.syncing = true;
+    try {
+      const url = Sync.config.url + '?token=' + encodeURIComponent(Sync.config.token);
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.error) {
+        Sync.setStatus('同期エラー: ' + json.error);
+        return;
+      }
+      if (json.payload && (json.updatedAt || 0) > (state.updatedAt || 0)) {
+        Sync.applyRemote(json.updatedAt, json.payload);
+        Sync.setStatus('最新データを取得しました');
+      } else {
+        Sync.setStatus('同期済み');
+      }
+    } catch (e) {
+      Sync.setStatus('同期失敗（オフライン？）');
+    } finally {
+      Sync.syncing = false;
+    }
+  },
+
+  applyRemote(updatedAt, payload) {
+    state.rooms = payload.rooms;
+    state.messagesByRoom = payload.messagesByRoom;
+    if (!state.rooms.find(r => r.id === state.currentRoomId)) {
+      state.currentRoomId = state.rooms[0].id;
+    }
+    if (typeof payload.yamlText === 'string') state.yamlText = payload.yamlText;
+    state.updatedAt = updatedAt;
+    Storage.save(state);
+    applyYamlConfig();
+    renderAll();
+  },
+
+  startPolling() {
+    clearInterval(Sync.pollTimer);
+    if (!Sync.config.enabled) return;
+    Sync.pollTimer = setInterval(Sync.download, 30000);
+  },
+
+  init() {
+    Sync.loadConfig();
+    Sync.startPolling();
+    if (Sync.config.enabled) Sync.download();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') Sync.download();
+    });
+  }
+};
 
 /* ------------------------------------------------------------------ *
  * YAML設定の適用
@@ -1487,6 +1646,45 @@ function initEventListeners() {
     document.getElementById('yaml-textarea').value = DEFAULT_YAML;
   });
 
+  // 同期設定
+  document.getElementById('open-sync-btn').addEventListener('click', () => {
+    document.getElementById('sync-enabled-checkbox').checked = !!Sync.config.enabled;
+    document.getElementById('sync-url-input').value = Sync.config.url || '';
+    document.getElementById('sync-token-input').value = Sync.config.token || '';
+    openModal('modal-sync');
+  });
+  document.getElementById('sync-save-btn').addEventListener('click', () => {
+    Sync.config.enabled = document.getElementById('sync-enabled-checkbox').checked;
+    Sync.config.url = document.getElementById('sync-url-input').value.trim();
+    Sync.config.token = document.getElementById('sync-token-input').value.trim();
+    Sync.saveConfig();
+    Sync.startPolling();
+    if (Sync.config.enabled) {
+      Sync.download();
+    } else {
+      Sync.setStatus('同期は無効です');
+    }
+    closeModal('modal-sync');
+    Utils.toast('同期設定を保存しました');
+  });
+  document.getElementById('sync-test-btn').addEventListener('click', async () => {
+    const url = document.getElementById('sync-url-input').value.trim();
+    const token = document.getElementById('sync-token-input').value.trim();
+    if (!url) { Utils.toast('URLを入力してください'); return; }
+    Utils.toast('接続確認中…');
+    try {
+      const res = await fetch(url + '?token=' + encodeURIComponent(token));
+      const json = await res.json();
+      if (json.error) {
+        Utils.toast('エラー: ' + json.error);
+      } else {
+        Utils.toast('接続に成功しました');
+      }
+    } catch (e) {
+      Utils.toast('接続に失敗しました');
+    }
+  });
+
   // モバイル用サイドバー開閉
   document.getElementById('menu-btn').addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
@@ -1498,6 +1696,7 @@ function init() {
   initEventListeners();
   renderAll();
   autoResizeTextarea(document.getElementById('msg-input'));
+  Sync.init();
 }
 
 document.addEventListener('DOMContentLoaded', init);
