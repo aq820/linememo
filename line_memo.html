@@ -77,6 +77,16 @@
   }
   .room-item:hover{background:#f7f7f7;}
   .room-item.active{background:#e9f9ee;}
+  .room-item.dragging{opacity:.4;}
+  .room-item.drag-over{box-shadow:inset 0 2px 0 var(--line-green);}
+  .room-drag-handle{
+    color:#bbb;
+    font-size:14px;
+    cursor:grab;
+    flex-shrink:0;
+    width:14px;
+    text-align:center;
+  }
   .room-avatar{
     width:38px;height:38px;border-radius:50%;
     background:var(--line-green);
@@ -355,6 +365,22 @@
   .modal-header button{border:none;background:none;font-size:18px;cursor:pointer;color:#888;}
   .modal-body{padding:16px;overflow-y:auto;flex:1;}
   .modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+  .bookmark-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+    margin-bottom:8px;background:#fafafa;
+  }
+  .bookmark-item .bookmark-info{flex:1;min-width:0;cursor:pointer;}
+  .bookmark-item .bookmark-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bookmark-item .bookmark-url{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bookmark-item .bookmark-actions{display:flex;gap:4px;flex-shrink:0;}
+  .bookmark-item .bookmark-actions button{
+    border:none;background:none;cursor:pointer;color:#bbb;font-size:14px;padding:4px 6px;
+  }
+  .bookmark-item .bookmark-actions button:hover{color:var(--primary);}
+  .bookmark-item .bookmark-actions button.bookmark-del-btn:hover{color:var(--danger);}
+  #modal-bookmark .modal-body label, #modal-bookmark-edit .modal-body label{font-size:12px;color:#666;display:block;margin-bottom:4px;}
+  #modal-bookmark-edit .modal-body input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;box-sizing:border-box;}
   .modal-footer button{
     padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;
   }
@@ -421,6 +447,7 @@
         <span id="chat-title" title="タップして名前を変更">-</span>
       </div>
       <div id="chat-actions">
+        <button id="bookmark-btn" title="ブックマーク">🔖</button>
         <button id="select-mode-btn" title="選択">☑️</button>
         <button id="export-room-btn" title="ルーム全体エクスポート">📤</button>
         <button id="bulk-delete-btn" title="一括削除">🗑</button>
@@ -566,6 +593,38 @@
     <div class="modal-header" style="background:#fff;"><span>プレビュー</span><button class="close-x" data-close="modal-image">×</button></div>
     <div class="modal-body" style="background:#fff;text-align:center;">
       <img id="image-preview-full" style="max-width:100%;max-height:70vh;">
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: ブックマーク一覧 ===== -->
+<div class="modal-overlay" id="modal-bookmark">
+  <div class="modal-box">
+    <div class="modal-header"><span>ブックマーク</span><button class="close-x" data-close="modal-bookmark">×</button></div>
+    <div class="modal-body">
+      <div id="bookmark-list"></div>
+      <button id="bookmark-more-btn" style="width:100%;margin-top:8px;padding:8px;border:1px dashed var(--border);background:#fafafa;border-radius:8px;cursor:pointer;display:none;">もっと見る</button>
+      <button id="bookmark-add-btn" style="width:100%;margin-top:10px;padding:9px;border:1px solid var(--line-green);color:var(--line-green);background:#fff;border-radius:8px;cursor:pointer;">＋ ブックマークを追加</button>
+    </div>
+    <div class="modal-footer">
+      <button data-close="modal-bookmark">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: ブックマーク編集 ===== -->
+<div class="modal-overlay" id="modal-bookmark-edit">
+  <div class="modal-box">
+    <div class="modal-header"><span id="bookmark-edit-title">ブックマークを追加</span><button class="close-x" data-close="modal-bookmark-edit">×</button></div>
+    <div class="modal-body">
+      <label>タイトル</label>
+      <input type="text" id="bookmark-input-title" placeholder="例: 会社サイト">
+      <label style="margin-top:10px;">URL / URI</label>
+      <input type="text" id="bookmark-input-url" placeholder="https://example.com">
+    </div>
+    <div class="modal-footer">
+      <button data-close="modal-bookmark-edit">キャンセル</button>
+      <button class="primary" id="confirm-bookmark-save">保存</button>
     </div>
   </div>
 </div>
@@ -769,7 +828,7 @@ function createDefaultState() {
   const defaultRoomId = Utils.uid();
   return {
     rooms: [
-      { id: defaultRoomId, name: 'デフォルトルーム', createdAt: now }
+      { id: defaultRoomId, name: 'デフォルトルーム', createdAt: now, isDefault: true }
     ],
     messagesByRoom: {
       [defaultRoomId]: []
@@ -791,6 +850,16 @@ let state = Storage.load() || createDefaultState();
   state.rooms.forEach(r => {
     if (!Array.isArray(state.messagesByRoom[r.id])) state.messagesByRoom[r.id] = [];
   });
+  // デフォルトルームは常に一番上に固定する
+  const defIdx = state.rooms.findIndex(r => r.isDefault);
+  if (defIdx > 0) {
+    const [defRoom] = state.rooms.splice(defIdx, 1);
+    state.rooms.unshift(defRoom);
+  }
+  if (!state.rooms.some(r => r.isDefault) && state.rooms.length) {
+    state.rooms[0].isDefault = true;
+  }
+  if (!Array.isArray(state.bookmarks)) state.bookmarks = [];
   if (!state.rooms.find(r => r.id === state.currentRoomId)) {
     state.currentRoomId = state.rooms[0].id;
   }
@@ -860,7 +929,7 @@ const Sync = {
         body: JSON.stringify({
           token: Sync.config.token,
           updatedAt: state.updatedAt || Date.now(),
-          payload: { rooms: state.rooms, messagesByRoom: state.messagesByRoom, currentRoomId: state.currentRoomId, yamlText: state.yamlText }
+          payload: { rooms: state.rooms, messagesByRoom: state.messagesByRoom, currentRoomId: state.currentRoomId, yamlText: state.yamlText, bookmarks: state.bookmarks }
         })
       });
       const json = await res.json();
@@ -907,6 +976,7 @@ const Sync = {
   applyRemote(updatedAt, payload) {
     state.rooms = payload.rooms;
     state.messagesByRoom = payload.messagesByRoom;
+    state.bookmarks = Array.isArray(payload.bookmarks) ? payload.bookmarks : (state.bookmarks || []);
     if (!state.rooms.find(r => r.id === state.currentRoomId)) {
       state.currentRoomId = state.rooms[0].id;
     }
@@ -972,7 +1042,10 @@ function renderRooms() {
     const last = msgs[msgs.length - 1];
     const item = document.createElement('div');
     item.className = 'room-item' + (room.id === state.currentRoomId ? ' active' : '');
+    item.dataset.roomId = room.id;
+    item.draggable = !room.isDefault;
     item.innerHTML = `
+      <span class="room-drag-handle" title="${room.isDefault ? 'デフォルトルームは固定です' : 'ドラッグで並べ替え'}">${room.isDefault ? '📌' : '⠿'}</span>
       <div class="room-avatar">${Utils.escapeHtml(room.name.slice(0,1) || '?')}</div>
       <div class="room-info">
         <div class="room-name">${Utils.escapeHtml(room.name)}</div>
@@ -988,8 +1061,49 @@ function renderRooms() {
       e.stopPropagation();
       deleteRoom(room.id);
     });
+    item.addEventListener('dragstart', (e) => {
+      if (room.isDefault) { e.preventDefault(); return; }
+      dragRoomId = room.id;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      dragRoomId = null;
+      item.classList.remove('dragging');
+      listEl.querySelectorAll('.room-item').forEach(el => el.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', (e) => {
+      if (!dragRoomId || room.isDefault || room.id === dragRoomId) return;
+      e.preventDefault();
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if (!dragRoomId || room.isDefault || room.id === dragRoomId) return;
+      reorderRoom(dragRoomId, room.id);
+      dragRoomId = null;
+    });
     listEl.appendChild(item);
   });
+}
+
+let dragRoomId = null;
+
+function reorderRoom(draggedId, targetId) {
+  const fromIdx = state.rooms.findIndex(r => r.id === draggedId);
+  const toIdx = state.rooms.findIndex(r => r.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+  const [moved] = state.rooms.splice(fromIdx, 1);
+  state.rooms.splice(toIdx, 0, moved);
+  const defIdx = state.rooms.findIndex(r => r.isDefault);
+  if (defIdx > 0) {
+    const [defRoom] = state.rooms.splice(defIdx, 1);
+    state.rooms.unshift(defRoom);
+  }
+  persist();
+  renderRooms();
 }
 
 function previewText(msg) {
@@ -1512,6 +1626,92 @@ function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
 /* ------------------------------------------------------------------ *
+ * ブックマーク機能
+ * - 既定で6件まで表示。7件目以降は「もっと見る」で展開表示。
+ * ------------------------------------------------------------------ */
+let bookmarkShowAll = false;
+let editingBookmarkId = null;
+
+function renderBookmarks() {
+  const listEl = document.getElementById('bookmark-list');
+  const moreBtn = document.getElementById('bookmark-more-btn');
+  listEl.innerHTML = '';
+  const bookmarks = state.bookmarks || [];
+  const visible = bookmarkShowAll ? bookmarks : bookmarks.slice(0, 6);
+
+  if (bookmarks.length === 0) {
+    listEl.innerHTML = '<div style="color:#999;font-size:13px;text-align:center;padding:12px 0;">まだブックマークがありません</div>';
+  }
+
+  visible.forEach(bm => {
+    const item = document.createElement('div');
+    item.className = 'bookmark-item';
+    item.innerHTML = `
+      <div class="bookmark-info">
+        <div class="bookmark-title">${Utils.escapeHtml(bm.title || bm.url)}</div>
+        <div class="bookmark-url">${Utils.escapeHtml(bm.url)}</div>
+      </div>
+      <div class="bookmark-actions">
+        <button class="bookmark-edit-btn" title="編集">✏️</button>
+        <button class="bookmark-del-btn" title="削除">🗑</button>
+      </div>
+    `;
+    item.querySelector('.bookmark-info').addEventListener('click', () => {
+      window.open(bm.url, '_blank', 'noopener');
+    });
+    item.querySelector('.bookmark-edit-btn').addEventListener('click', () => openBookmarkEdit(bm.id));
+    item.querySelector('.bookmark-del-btn').addEventListener('click', () => deleteBookmark(bm.id));
+    listEl.appendChild(item);
+  });
+
+  moreBtn.style.display = (!bookmarkShowAll && bookmarks.length > 6) ? 'block' : 'none';
+
+  const addBtn = document.getElementById('bookmark-add-btn');
+  if (bookmarks.length >= 6 && !bookmarkShowAll) {
+    addBtn.style.display = bookmarks.length > 6 ? 'none' : '';
+  } else {
+    addBtn.style.display = '';
+  }
+}
+
+function openBookmarkEdit(id) {
+  editingBookmarkId = id || null;
+  const bm = id ? (state.bookmarks || []).find(b => b.id === id) : null;
+  document.getElementById('bookmark-edit-title').textContent = id ? 'ブックマークを編集' : 'ブックマークを追加';
+  document.getElementById('bookmark-input-title').value = bm ? bm.title : '';
+  document.getElementById('bookmark-input-url').value = bm ? bm.url : '';
+  openModal('modal-bookmark-edit');
+}
+
+function saveBookmark() {
+  const title = document.getElementById('bookmark-input-title').value.trim();
+  const url = document.getElementById('bookmark-input-url').value.trim();
+  if (!url) {
+    Utils.toast('URLを入力してください');
+    return;
+  }
+  if (!Array.isArray(state.bookmarks)) state.bookmarks = [];
+
+  if (editingBookmarkId) {
+    const bm = state.bookmarks.find(b => b.id === editingBookmarkId);
+    if (bm) { bm.title = title; bm.url = url; }
+  } else {
+    state.bookmarks.push({ id: Utils.uid(), title, url });
+  }
+  editingBookmarkId = null;
+  persist();
+  closeModal('modal-bookmark-edit');
+  renderBookmarks();
+}
+
+function deleteBookmark(id) {
+  if (!confirm('このブックマークを削除しますか？')) return;
+  state.bookmarks = (state.bookmarks || []).filter(b => b.id !== id);
+  persist();
+  renderBookmarks();
+}
+
+/* ------------------------------------------------------------------ *
  * 6. 初期化 & イベント登録
  * ------------------------------------------------------------------ */
 function initEventListeners() {
@@ -1587,6 +1787,19 @@ function initEventListeners() {
     handleFilesSelected(e.target.files);
     e.target.value = '';
   });
+
+  // ブックマーク
+  document.getElementById('bookmark-btn').addEventListener('click', () => {
+    bookmarkShowAll = false;
+    renderBookmarks();
+    openModal('modal-bookmark');
+  });
+  document.getElementById('bookmark-add-btn').addEventListener('click', () => openBookmarkEdit(null));
+  document.getElementById('bookmark-more-btn').addEventListener('click', () => {
+    bookmarkShowAll = true;
+    renderBookmarks();
+  });
+  document.getElementById('confirm-bookmark-save').addEventListener('click', saveBookmark);
 
   // 選択モード
   document.getElementById('select-mode-btn').addEventListener('click', toggleSelectionMode);
