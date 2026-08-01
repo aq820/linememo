@@ -211,13 +211,14 @@
     overflow:hidden;
   }
   .msg-row:hover .msg-actions{opacity:1;height:auto;overflow:visible;}
-  .msg-delete-btn, .msg-edit-btn, .msg-copy-btn{
+  .msg-delete-btn, .msg-edit-btn, .msg-copy-btn, .msg-move-btn{
     background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
     padding:4px 6px;
   }
   .msg-delete-btn:hover{color:var(--danger);}
   .msg-edit-btn:hover{color:var(--primary);}
   .msg-copy-btn:hover{color:var(--line-green);}
+  .msg-move-btn:hover{color:var(--primary);}
   .msg-row.selecting .msg-actions{display:none;}
   .msg-edit-textarea{
     width:100%;min-width:180px;box-sizing:border-box;border:1px solid var(--primary);
@@ -460,6 +461,7 @@
       <span id="selection-count">0件選択中</span>
       <div class="sel-actions">
         <button id="sel-export-btn" class="primary">エクスポート</button>
+        <button id="sel-move-btn">移動</button>
         <button id="sel-delete-btn" class="danger">削除</button>
         <button id="sel-cancel-btn">キャンセル</button>
       </div>
@@ -625,6 +627,21 @@
     <div class="modal-footer">
       <button data-close="modal-bookmark-edit">キャンセル</button>
       <button class="primary" id="confirm-bookmark-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: メッセージを別ルームへ移動 ===== -->
+<div class="modal-overlay" id="modal-move-message">
+  <div class="modal-box">
+    <div class="modal-header"><span>別ルームへ移動</span><button class="close-x" data-close="modal-move-message">×</button></div>
+    <div class="modal-body">
+      <label>移動先のルームを選択</label>
+      <select id="move-target-room" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;box-sizing:border-box;"></select>
+    </div>
+    <div class="modal-footer">
+      <button data-close="modal-move-message">キャンセル</button>
+      <button class="primary" id="confirm-move-message">移動する</button>
     </div>
   </div>
 </div>
@@ -1212,6 +1229,16 @@ function renderMessageRow(msg, showTimestamp) {
     actionsWrap.appendChild(editBtn);
   }
 
+  const moveBtn = document.createElement('button');
+  moveBtn.className = 'msg-move-btn';
+  moveBtn.title = '別ルームへ移動';
+  moveBtn.textContent = '📁';
+  moveBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openMoveMessageModal(msg.id);
+  });
+  actionsWrap.appendChild(moveBtn);
+
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'msg-delete-btn';
   deleteBtn.title = 'このメッセージを削除';
@@ -1366,6 +1393,54 @@ function deleteMessage(msgId) {
   persist();
   renderAll();
   Utils.toast('メモを削除しました');
+}
+
+// ---- メッセージを別ルームへ移動（単一・複数選択の両方に対応） ----
+let movingMessageIds = null;
+
+function openMoveMessageModal(msgId) {
+  openMoveModalForIds([msgId]);
+}
+
+function openMoveSelectedMessages() {
+  if (selectedIds.size === 0) {
+    Utils.toast('選択されていません');
+    return;
+  }
+  openMoveModalForIds(Array.from(selectedIds));
+}
+
+function openMoveModalForIds(ids) {
+  const otherRooms = state.rooms.filter(r => r.id !== state.currentRoomId);
+  if (otherRooms.length === 0) {
+    Utils.toast('移動先となる他のルームがありません');
+    return;
+  }
+  movingMessageIds = ids;
+  const select = document.getElementById('move-target-room');
+  select.innerHTML = otherRooms.map(r => `<option value="${r.id}">${Utils.escapeHtml(r.name)}</option>`).join('');
+  openModal('modal-move-message');
+}
+
+function confirmMoveMessage() {
+  if (!movingMessageIds || movingMessageIds.length === 0) return;
+  const targetRoomId = document.getElementById('move-target-room').value;
+  if (!targetRoomId) return;
+  const idsToMove = new Set(movingMessageIds);
+  const srcMsgs = state.messagesByRoom[state.currentRoomId] || [];
+  const moved = srcMsgs.filter(m => idsToMove.has(m.id));
+  state.messagesByRoom[state.currentRoomId] = srcMsgs.filter(m => !idsToMove.has(m.id));
+  if (!Array.isArray(state.messagesByRoom[targetRoomId])) state.messagesByRoom[targetRoomId] = [];
+  state.messagesByRoom[targetRoomId].push(...moved);
+  state.messagesByRoom[targetRoomId].sort((a, b) => a.createdAt - b.createdAt);
+  idsToMove.forEach(id => selectedIds.delete(id));
+  const movedCount = moved.length;
+  movingMessageIds = null;
+  selectionMode = false;
+  persist();
+  renderAll();
+  closeModal('modal-move-message');
+  Utils.toast(`${movedCount}件のメモを移動しました`);
 }
 
 // ---- 選択メッセージの一括削除 ----
@@ -1801,6 +1876,9 @@ function initEventListeners() {
   });
   document.getElementById('confirm-bookmark-save').addEventListener('click', saveBookmark);
 
+  // メッセージの別ルーム移動
+  document.getElementById('confirm-move-message').addEventListener('click', confirmMoveMessage);
+
   // 選択モード
   document.getElementById('select-mode-btn').addEventListener('click', toggleSelectionMode);
   document.getElementById('sel-cancel-btn').addEventListener('click', () => {
@@ -1809,6 +1887,7 @@ function initEventListeners() {
     renderAll();
   });
   document.getElementById('sel-export-btn').addEventListener('click', () => exportMessages('selection'));
+  document.getElementById('sel-move-btn').addEventListener('click', openMoveSelectedMessages);
   document.getElementById('sel-delete-btn').addEventListener('click', deleteSelectedMessages);
   document.getElementById('export-room-btn').addEventListener('click', () => exportMessages('room'));
 
