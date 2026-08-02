@@ -348,6 +348,8 @@
   }
   #selection-bar button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
   #selection-bar button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+  #selection-bar button.info{background:#3a8ee6;color:#fff;border-color:#3a8ee6;}
+  #selection-bar button.info:hover{background:#2f77c2;}
 
   /* ---------- モーダル共通 ---------- */
   .modal-overlay{
@@ -461,7 +463,7 @@
       <span id="selection-count">0件選択中</span>
       <div class="sel-actions">
         <button id="sel-export-btn" class="primary">エクスポート</button>
-        <button id="sel-move-btn">移動</button>
+        <button id="sel-move-btn" class="info">移動</button>
         <button id="sel-delete-btn" class="danger">削除</button>
         <button id="sel-cancel-btn">キャンセル</button>
       </div>
