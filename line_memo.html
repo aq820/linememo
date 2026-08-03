@@ -823,6 +823,44 @@ const Utils = {
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(file);
     });
+  },
+
+  /** 画像を Canvas でリサイズ・再圧縮してから dataURL(JPEG) として返す（localStorage容量節約用） */
+  compressImage(file, maxDim = 1280, quality = 0.6) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round(height * maxDim / width);
+            width = maxDim;
+          } else {
+            width = Math.round(width * maxDim / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = (e) => {
+        URL.revokeObjectURL(url);
+        reject(e);
+      };
+      img.src = url;
+    });
+  },
+
+  /** dataURL(Base64)からおおよそのバイトサイズを算出 */
+  dataUrlByteSize(dataUrl) {
+    const base64 = dataUrl.split(',')[1] || '';
+    return Math.round(base64.length * 0.75);
   }
 };
 
@@ -1575,8 +1613,10 @@ async function handleFilesSelected(fileList) {
         dataUrl: null
       };
       if (isImage) {
-        // 画像のみ dataURL を保持してプレビュー・永続化する（非画像は容量節約のためメタ情報のみ保存）
-        att.dataUrl = await Utils.readFileAsDataURL(file);
+        // 画像は Canvas でリサイズ・再圧縮してから保持する（localStorage容量節約: 長辺1280px, JPEG品質0.6）
+        att.dataUrl = await Utils.compressImage(file, 1280, 0.6);
+        att.type = 'image/jpeg';
+        att.size = Utils.dataUrlByteSize(att.dataUrl);
       }
       pendingAttachments.push(att);
     } catch (e) {
