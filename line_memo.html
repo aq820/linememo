@@ -13,483 +13,225 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LINE風メモ">
 <style>
-  :root{
-    --line-green:#06C755;
-    --line-green-dark:#04a746;
-    --bg-room:#f5f5f5;
-    --bubble-me:#8de1a1;
-    --bubble-file:#ffffff;
-    --border:#e0e0e0;
-    --danger:#e64a4a;
-    --primary:#06C755;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;height:100%;height:100dvh;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Segoe UI",Roboto,sans-serif;overflow:hidden;}
-  body{background:#dcdcdc;}
-  #app{
-    display:flex;
-    height:100vh;
-    height:100dvh;
-    max-width:1200px;
-    margin:0 auto;
-    background:#fff;
-    box-shadow:0 0 20px rgba(0,0,0,.15);
-    overflow:hidden;
-  }
-  /* ---------- サイドバー(ルーム一覧) ---------- */
-  #sidebar{
-    width:280px;
-    min-width:220px;
-    background:#fff;
-    border-right:1px solid var(--border);
-    display:flex;
-    flex-direction:column;
-  }
-  #sidebar-header{
-    background:var(--line-green);
-    color:#fff;
-    padding:14px 12px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    font-weight:bold;
-    font-size:16px;
-  }
-  #sidebar-header button{
-    background:rgba(255,255,255,.2);
-    border:none;
-    color:#fff;
-    border-radius:6px;
-    padding:6px 10px;
-    cursor:pointer;
-    font-size:13px;
-  }
-  #sidebar-header button:hover{background:rgba(255,255,255,.35);}
-  #room-list{flex:1;overflow-y:auto;}
-  .room-item{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 14px;
-    cursor:pointer;
-    border-bottom:1px solid #f0f0f0;
-    position:relative;
-  }
-  .room-item:hover{background:#f7f7f7;}
-  .room-item.active{background:#e9f9ee;}
-  .room-item.dragging{opacity:.4;}
-  .room-item.drag-over{box-shadow:inset 0 2px 0 var(--line-green);}
-  .room-drag-handle{
-    color:#bbb;
-    font-size:14px;
-    cursor:grab;
-    flex-shrink:0;
-    width:14px;
-    text-align:center;
-  }
-  .room-avatar{
-    width:38px;height:38px;border-radius:50%;
-    background:var(--line-green);
-    color:#fff;display:flex;align-items:center;justify-content:center;
-    font-weight:bold;flex-shrink:0;
-  }
-  .room-info{flex:1;overflow:hidden;}
-  .room-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .room-last{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .room-del{
-    background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;padding:4px;
-  }
-  .room-del:hover{color:var(--danger);}
-  #sidebar-footer{
-    padding:10px;
-    border-top:1px solid var(--border);
-    display:flex;
-    gap:6px;
-  }
-  #sidebar-footer button{
-    flex:1;
-    padding:8px;
-    border:1px solid var(--border);
-    background:#fafafa;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:12px;
-  }
-  #sidebar-footer button:hover{background:#eee;}
-  #sync-status-bar{
-    padding:6px 10px;
-    font-size:11px;
-    color:#888;
-    text-align:center;
-    border-top:1px solid var(--border);
-    background:#fafafa;
-  }
+:root{
+  --line-green:#06C755;
+  --line-green-dark:#04a746;
+  --bg-room:#f5f5f5;
+  --bubble-me:#8de1a1;
+  --bubble-file:#ffffff;
+  --border:#e0e0e0;
+  --danger:#e64a4a;
+  --primary:#06C755;
+  --mark:#8e6fcf;
+  --mark-dark:#7a5cb8;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;height:100dvh;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Segoe UI",Roboto,sans-serif;overflow:hidden;}
+body{background:#dcdcdc;}
+#app{display:flex;height:100vh;height:100dvh;max-width:1200px;margin:0 auto;background:#fff;box-shadow:0 0 20px rgba(0,0,0,.15);overflow:hidden;}
 
-  /* ---------- メインチャット領域 ---------- */
-  #main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-room);}
-  #chat-header{
-    background:#fff;
-    border-bottom:1px solid var(--border);
-    padding:12px 16px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  #chat-title{font-weight:bold;font-size:16px;cursor:pointer;}
-  #chat-title:hover{text-decoration:underline;}
-  #chat-actions{display:flex;gap:8px;}
-  #chat-actions button{
-    border:1px solid var(--border);
-    background:#fff;
-    border-radius:8px;
-    padding:6px 10px;
-    cursor:pointer;
-    font-size:12px;
-  }
-  #chat-actions button:hover{background:#f2f2f2;}
-  #chat-actions button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
-  #chat-actions button.primary:hover{background:var(--line-green-dark);}
+#sidebar{width:280px;min-width:220px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;}
+#sidebar-header{background:var(--line-green);color:#fff;padding:14px 12px;display:flex;align-items:center;justify-content:space-between;font-weight:bold;font-size:16px;}
+#sidebar-header button{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:13px;}
+#sidebar-header button:hover{background:rgba(255,255,255,.35);}
+#room-list{flex:1;overflow-y:auto;}
+.room-item{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;position:relative;}
+.room-item:hover{background:#f7f7f7;}
+.room-item.active{background:#e9f9ee;}
+.room-item.dragging{opacity:.4;}
+.room-item.drag-over{box-shadow:inset 0 2px 0 var(--line-green);}
+.room-drag-handle{color:#bbb;font-size:14px;cursor:grab;flex-shrink:0;width:14px;text-align:center;}
+.room-avatar{width:38px;height:38px;border-radius:50%;background:var(--line-green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;}
+.room-info{flex:1;overflow:hidden;}
+.room-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.room-last{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.room-del{background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;padding:4px;}
+.room-del:hover{color:var(--danger);}
+#sidebar-footer{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px;}
+#sidebar-footer button{flex:1;padding:8px;border:1px solid var(--border);background:#fafafa;border-radius:8px;cursor:pointer;font-size:12px;}
+#sidebar-footer button:hover{background:#eee;}
+#sync-status-bar{padding:6px 10px;font-size:11px;color:#888;text-align:center;border-top:1px solid var(--border);background:#fafafa;}
 
-  #messages{
-    flex:1;
-    overflow-y:auto;
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .date-sep{
-    text-align:center;
-    color:#999;
-    font-size:12px;
-    margin:14px 0 6px;
-  }
-  .msg-row{
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:2px;
-    max-width:78%;
-    align-self:flex-end;
-    position:relative;
-    width:fit-content;
-  }
-  .msg-row.selecting{cursor:pointer;}
-  .msg-row-top{
-    display:flex;
-    align-items:flex-start;
-    gap:8px;
-    width:100%;
-  }
-  .msg-checkbox{
-    width:18px;height:18px;margin-top:8px;flex-shrink:0;accent-color:var(--line-green);
-  }
-  .msg-bubble-wrap{display:flex;flex-direction:column;align-items:flex-end;flex:1;min-width:0;}
-  .msg-bubble{
-    background:var(--bubble-me);
-    padding:9px 12px;
-    border-radius:14px 14px 2px 14px;
-    font-size:14px;
-    line-height:1.5;
-    white-space:pre-wrap;
-    word-break:break-word;
-    max-width:100%;
-    box-shadow:0 1px 1px rgba(0,0,0,.05);
-  }
-  .msg-bubble.file-msg{background:var(--bubble-file);border:1px solid var(--border);}
-  .msg-link{color:#0b57d0;text-decoration:underline;word-break:break-all;}
-  .msg-link:active{opacity:0.7;}
-  .msg-row.selected .msg-bubble{outline:2px solid var(--line-green);}
-  .msg-time{font-size:11px;color:#999;margin-top:3px;}
-  .msg-actions{
-    display:flex;
-    gap:4px;
-    justify-content:flex-end;
-    opacity:0;
-    transition:opacity .15s;
-    height:0;
-    overflow:hidden;
-  }
-  .msg-row:hover .msg-actions{opacity:1;height:auto;overflow:visible;}
-  .msg-delete-btn, .msg-edit-btn, .msg-copy-btn, .msg-move-btn{
-    background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
-    padding:4px 6px;
-  }
-  .msg-delete-btn:hover{color:var(--danger);}
-  .msg-edit-btn:hover{color:var(--primary);}
-  .msg-copy-btn:hover{color:var(--line-green);}
-  .msg-move-btn:hover{color:var(--primary);}
-  .msg-row.selecting .msg-actions{display:none;}
-  .msg-edit-textarea{
-    width:100%;min-width:180px;box-sizing:border-box;border:1px solid var(--primary);
-    border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;resize:none;
-    line-height:1.4;background:#fff;color:#111;
-  }
-  .msg-edit-actions{
-    display:flex;gap:6px;justify-content:flex-end;margin-top:4px;
-  }
-  .msg-edit-actions button{
-    font-size:12px;padding:4px 10px;border-radius:14px;border:1px solid #ddd;
-    background:#fff;cursor:pointer;color:#555;
-  }
-  .msg-edit-actions button.primary{
-    background:var(--primary);color:#fff;border-color:var(--primary);
-  }
-  .msg-edited-label{font-size:11px;color:#999;margin-top:2px;}
-  .msg-img{max-width:220px;border-radius:10px;display:block;margin-top:4px;cursor:pointer;}
-  .file-chip{
-    display:flex;align-items:center;gap:8px;
-    background:#f6f6f6;border-radius:10px;padding:8px 10px;margin-top:4px;
-    font-size:13px;
-  }
-  .file-chip .file-icon{font-size:20px;}
-  .file-chip .file-meta{display:flex;flex-direction:column;}
-  .file-chip .file-name{font-weight:600;word-break:break-all;}
-  .file-chip .file-sub{color:#888;font-size:11px;}
+#main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-room);}
+#chat-header{background:#fff;border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+#chat-title{font-weight:bold;font-size:16px;cursor:pointer;}
+#chat-title:hover{text-decoration:underline;}
+#chat-actions{display:flex;gap:8px;}
+#chat-actions button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;}
+#chat-actions button:hover{background:#f2f2f2;}
+#mark-all-btn{color:var(--mark);font-weight:bold;}
 
-  #input-toolbar{
-    background:#f7f7f7;
-    border-top:1px solid var(--border);
-    overflow:hidden;
-    max-height:0;
-    transition:max-height .2s ease;
-  }
-  #input-toolbar.open{max-height:120px;}
-  #input-toolbar-buttons{
-    display:flex;
-    gap:8px;
-    padding:10px 12px 4px;
-  }
-  #attach-btn, #todo-btn{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:8px 14px;
-    font-size:14px;
-    cursor:pointer;
-    flex-shrink:0;
-  }
-  #attach-btn:hover, #todo-btn:hover{background:#e2e2e2;}
-  #todo-btn.active{background:var(--line-green);color:#fff;border-color:var(--line-green);}
-  #input-area{
-    background:#fff;
-    border-top:1px solid var(--border);
-    padding:10px 12px;
-    display:flex;
-    align-items:flex-end;
-    gap:8px;
-    flex-shrink:0;
-  }
-  #toolbar-toggle-btn{
-    background:#f0f0f0;
-    border:none;
-    border-radius:50%;
-    width:38px;height:38px;
-    font-size:20px;
-    cursor:pointer;
-    flex-shrink:0;
-    transition:transform .2s ease, background .2s ease;
-    line-height:1;
-  }
-  #toolbar-toggle-btn:hover{background:#e2e2e2;}
-  #toolbar-toggle-btn.open{transform:rotate(45deg);background:#e2e2e2;}
-  #msg-input{
-    flex:1;
-    resize:none;
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:9px 14px;
-    font-size:14px;
-    max-height:120px;
-    line-height:1.4;
-    font-family:inherit;
-  }
-  #send-btn{
-    background:var(--line-green);
-    color:#fff;
-    border:none;
-    border-radius:18px;
-    padding:9px 16px;
-    font-size:14px;
-    cursor:pointer;
-    flex-shrink:0;
-  }
-  #send-btn:hover{background:var(--line-green-dark);}
-  #send-btn:disabled{background:#ccc;cursor:not-allowed;}
-  #attach-preview{
-    display:flex;gap:6px;padding:0 12px;flex-wrap:wrap;
-  }
-  #attach-preview .pending-file{
-    background:#f0f0f0;border-radius:8px;padding:4px 8px;font-size:12px;
-    display:flex;align-items:center;gap:6px;
-  }
-  #attach-preview .pending-file button{border:none;background:none;cursor:pointer;color:#e64a4a;font-weight:bold;}
-  #var-hint{font-size:11px;color:#999;padding:2px 14px;}
+#messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px;}
+.date-sep{text-align:center;color:#999;font-size:12px;margin:14px 0 6px;}
+.msg-row{display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:78%;align-self:flex-end;position:relative;width:fit-content;}
+.msg-row.selecting{cursor:pointer;}
+.msg-row-top{display:flex;align-items:flex-start;gap:8px;width:100%;}
+.msg-checkbox{width:18px;height:18px;margin-top:8px;flex-shrink:0;accent-color:var(--line-green);}
+.msg-bubble-wrap{display:flex;flex-direction:column;align-items:flex-end;flex:1;min-width:0;}
+.msg-bubble-anchor{position:relative;max-width:100%;}
+.msg-bubble{background:var(--bubble-me);padding:9px 12px;border-radius:14px 14px 2px 14px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;max-width:100%;box-shadow:0 1px 1px rgba(0,0,0,.05);}
+.msg-bubble.file-msg{background:var(--bubble-file);border:1px solid var(--border);}
+.msg-link{color:#0b57d0;text-decoration:underline;word-break:break-all;}
+.msg-link:active{opacity:0.7;}
+.msg-row.selected .msg-bubble{outline:2px solid var(--line-green);}
+.msg-row.sent .msg-bubble{opacity:.82;}
+.msg-time{font-size:11px;color:#999;margin-top:3px;}
+.msg-sent-label{position:absolute;right:100%;bottom:0;margin-right:4px;font-size:15px;color:var(--mark);font-weight:700;white-space:nowrap;line-height:1;pointer-events:none;}
+.msg-actions{display:flex;gap:4px;justify-content:flex-end;opacity:0;transition:opacity .15s;height:0;overflow:hidden;}
+.msg-row:hover .msg-actions{opacity:1;height:auto;overflow:visible;}
+.msg-delete-btn,.msg-edit-btn,.msg-copy-btn,.msg-move-btn,.msg-mark-btn{background:none;border:none;color:#bbb;cursor:pointer;font-size:16px;padding:4px 6px;line-height:1;}
+.msg-delete-btn:hover{color:var(--danger);}
+.msg-edit-btn:hover{color:var(--primary);}
+.msg-copy-btn:hover{color:var(--line-green);}
+.msg-move-btn:hover{color:var(--primary);}
+.msg-mark-btn:hover{color:var(--mark);}
+.msg-mark-btn.active{color:var(--mark);}
+.msg-row.selecting .msg-actions{display:none;}
+.msg-edit-textarea{width:100%;min-width:180px;box-sizing:border-box;border:1px solid var(--primary);border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;resize:none;line-height:1.4;background:#fff;color:#111;}
+.msg-edit-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:4px;}
+.msg-edit-actions button{font-size:12px;padding:4px 10px;border-radius:14px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;}
+.msg-edit-actions button.primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+.msg-edited-label{font-size:11px;color:#999;margin-top:2px;}
+.msg-img{max-width:220px;border-radius:10px;display:block;margin-top:4px;cursor:pointer;}
+.file-chip{display:flex;align-items:center;gap:8px;background:#f6f6f6;border-radius:10px;padding:8px 10px;margin-top:4px;font-size:13px;}
+.file-chip .file-icon{font-size:20px;}
+.file-chip .file-meta{display:flex;flex-direction:column;}
+.file-chip .file-name{font-weight:600;word-break:break-all;}
+.file-chip .file-sub{color:#888;font-size:11px;}
 
-  /* 選択モードバー */
-  #selection-bar{
-    display:none;
-    background:#fff9d9;
-    border-top:1px solid #eadf9a;
-    padding:8px 14px;
-    align-items:center;
-    justify-content:space-between;
-    font-size:13px;
-  }
-  #selection-bar.active{display:flex;}
-  #selection-bar .sel-actions{display:flex;gap:8px;}
-  #selection-bar button{
-    border:1px solid var(--border);
-    background:#fff;
-    border-radius:6px;
-    padding:5px 10px;
-    cursor:pointer;
-    font-size:12px;
-  }
-  #selection-bar button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
-  #selection-bar button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
-  #selection-bar button.info{background:#3a8ee6;color:#fff;border-color:#3a8ee6;}
-  #selection-bar button.info:hover{background:#2f77c2;}
+#input-toolbar{background:#f7f7f7;border-top:1px solid var(--border);overflow:hidden;max-height:0;transition:max-height .2s ease;}
+#input-toolbar.open{max-height:120px;}
+#input-toolbar-buttons{display:flex;gap:8px;padding:10px 12px 4px;}
+#attach-btn,#todo-btn{background:#fff;border:1px solid var(--border);border-radius:18px;padding:8px 14px;font-size:14px;cursor:pointer;flex-shrink:0;}
+#attach-btn:hover,#todo-btn:hover{background:#e2e2e2;}
+#todo-btn.active{background:var(--line-green);color:#fff;border-color:var(--line-green);}
+#input-area{background:#fff;border-top:1px solid var(--border);padding:10px 12px;display:flex;align-items:flex-end;gap:8px;flex-shrink:0;}
+#toolbar-toggle-btn{background:#f0f0f0;border:none;border-radius:50%;width:38px;height:38px;font-size:20px;cursor:pointer;flex-shrink:0;transition:transform .2s ease,background .2s ease;line-height:1;}
+#toolbar-toggle-btn:hover{background:#e2e2e2;}
+#toolbar-toggle-btn.open{transform:rotate(45deg);background:#e2e2e2;}
+#msg-input{flex:1;resize:none;border:1px solid var(--border);border-radius:18px;padding:9px 14px;font-size:14px;max-height:120px;line-height:1.4;font-family:inherit;}
+#send-btn{background:var(--line-green);color:#fff;border:none;border-radius:18px;padding:9px 16px;font-size:14px;cursor:pointer;flex-shrink:0;}
+#send-btn:hover{background:var(--line-green-dark);}
+#send-btn:disabled{background:#ccc;cursor:not-allowed;}
+#attach-preview{display:flex;gap:6px;padding:0 12px;flex-wrap:wrap;}
+#attach-preview .pending-file{background:#f0f0f0;border-radius:8px;padding:4px 8px;font-size:12px;display:flex;align-items:center;gap:6px;}
+#attach-preview .pending-file button{border:none;background:none;cursor:pointer;color:#e64a4a;font-weight:bold;}
+#var-hint{font-size:11px;color:#999;padding:2px 14px;}
 
-  /* ---------- モーダル共通 ---------- */
-  .modal-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.4);
-    display:none;align-items:center;justify-content:center;z-index:100;
-  }
-  .modal-overlay.active{display:flex;}
-  .modal-box{
-    background:#fff;border-radius:12px;width:90%;max-width:480px;
-    max-height:85vh;display:flex;flex-direction:column;overflow:hidden;
-  }
-  .modal-header{
-    padding:14px 16px;border-bottom:1px solid var(--border);
-    display:flex;justify-content:space-between;align-items:center;font-weight:bold;
-  }
-  .modal-header button{border:none;background:none;font-size:18px;cursor:pointer;color:#888;}
-  .modal-body{padding:16px;overflow-y:auto;flex:1;}
-  .modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
-  .bookmark-item{
-    display:flex;align-items:center;gap:10px;
-    padding:10px 12px;border:1px solid var(--border);border-radius:8px;
-    margin-bottom:8px;background:#fafafa;
-  }
-  .bookmark-item .bookmark-info{flex:1;min-width:0;cursor:pointer;}
-  .bookmark-item .bookmark-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .bookmark-item .bookmark-url{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .bookmark-item .bookmark-actions{display:flex;gap:4px;flex-shrink:0;}
-  .bookmark-item .bookmark-actions button{
-    border:none;background:none;cursor:pointer;color:#bbb;font-size:14px;padding:4px 6px;
-  }
-  .bookmark-item .bookmark-actions button:hover{color:var(--primary);}
-  .bookmark-item .bookmark-actions button.bookmark-del-btn:hover{color:var(--danger);}
-  #modal-bookmark .modal-body label, #modal-bookmark-edit .modal-body label{font-size:12px;color:#666;display:block;margin-bottom:4px;}
-  #modal-bookmark-edit .modal-body input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;box-sizing:border-box;}
-  .modal-footer button{
-    padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;
-  }
-  .modal-footer button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
-  .modal-body input[type=text], .modal-body select{
-    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-top:4px;
-  }
-  .modal-body label{font-size:13px;color:#555;font-weight:600;display:block;margin-bottom:4px;margin-top:10px;}
-  #yaml-textarea{
-    width:100%;height:280px;font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:13px;
-    border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;
-  }
-  #yaml-error{color:var(--danger);font-size:12px;margin-top:8px;white-space:pre-wrap;display:none;}
-  #yaml-error.show{display:block;}
-  #export-preview{
-    width:100%;height:280px;font-family:monospace;font-size:12px;border:1px solid var(--border);
-    border-radius:8px;padding:10px;
-  }
-  .radio-group{display:flex;gap:14px;font-size:13px;margin-top:6px;}
-  .toast{
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;
-    z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;
-  }
-  .toast.show{opacity:1;}
+#selection-bar{display:none;background:#fff9d9;border-top:1px solid #eadf9a;padding:8px 14px;align-items:center;justify-content:space-between;font-size:13px;}
+#selection-bar.active{display:flex;}
+#selection-bar .sel-actions{display:flex;gap:8px;}
+#selection-bar button{border:1px solid var(--border);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;}
+#selection-bar button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
+#selection-bar button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+#selection-bar button.info{background:#3a8ee6;color:#fff;border-color:#3a8ee6;}
+#selection-bar button.info:hover{background:#2f77c2;}
+#selection-bar button.mark{background:var(--mark);color:#fff;border-color:var(--mark);}
+#selection-bar button.mark:hover{background:var(--mark-dark);}
 
-  @media (max-width:768px){
-    #app{max-width:100%;box-shadow:none;}
-    #sidebar{
-      position:absolute;left:0;top:0;bottom:0;z-index:50;
-      transform:translateX(-100%);transition:transform .25s;width:80%;max-width:300px;
-    }
-    #sidebar.open{transform:translateX(0);}
-    #menu-btn{display:inline-block !important;}
-    .msg-row{max-width:88%;}
-  }
-  #menu-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;margin-right:8px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:#fff;border-radius:12px;width:90%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:bold;}
+.modal-header button{border:none;background:none;font-size:18px;cursor:pointer;color:#888;}
+.modal-body{padding:16px;overflow-y:auto;flex:1;}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.bookmark-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fafafa;}
+.bookmark-item .bookmark-info{flex:1;min-width:0;cursor:pointer;}
+.bookmark-item .bookmark-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bookmark-item .bookmark-url{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bookmark-item .bookmark-actions{display:flex;gap:4px;flex-shrink:0;}
+.bookmark-item .bookmark-actions button{border:none;background:none;cursor:pointer;color:#bbb;font-size:14px;padding:4px 6px;}
+.bookmark-item .bookmark-actions button:hover{color:var(--primary);}
+.bookmark-item .bookmark-actions button.bookmark-del-btn:hover{color:var(--danger);}
+#modal-bookmark .modal-body label,#modal-bookmark-edit .modal-body label{font-size:12px;color:#666;display:block;margin-bottom:4px;}
+#modal-bookmark-edit .modal-body input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;box-sizing:border-box;}
+.modal-footer button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;}
+.modal-footer button.primary{background:var(--line-green);color:#fff;border-color:var(--line-green);}
+.modal-body input[type="text"],.modal-body select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-top:4px;}
+.modal-body label{font-size:13px;color:#555;font-weight:600;display:block;margin-bottom:4px;margin-top:10px;}
+#yaml-textarea{width:100%;height:280px;font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:13px;border:1px solid var(--border);border-radius:8px;padding:10px;resize:vertical;}
+#yaml-error{color:var(--danger);font-size:12px;margin-top:8px;white-space:pre-wrap;display:none;}
+#yaml-error.show{display:block;}
+#export-preview{width:100%;height:280px;font-family:monospace;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:10px;}
+.radio-group{display:flex;gap:14px;font-size:13px;margin-top:6px;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+@media (max-width:768px){
+  #app{max-width:100%;box-shadow:none;}
+  #sidebar{position:absolute;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);transition:transform .25s;width:80%;max-width:300px;}
+  #sidebar.open{transform:translateX(0);}
+  #menu-btn{display:inline-block !important;}
+  .msg-row{max-width:88%;}
+}
+#menu-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;margin-right:8px;}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ===== サイドバー: チャットルーム一覧 ===== -->
-  <div id="sidebar">
-    <div id="sidebar-header">
-      <span>チャット一覧</span>
-      <button id="new-room-btn" title="新規ルーム作成">＋ ルーム</button>
-    </div>
-    <div id="room-list"></div>
-    <div id="sidebar-footer">
-      <button id="open-yaml-btn">⚙ YAML設定</button>
-      <button id="open-sync-btn">☁ 同期設定</button>
-    </div>
-    <div id="sync-status-bar">
-      <span id="sync-status">未設定</span>
-    </div>
+<div id="sidebar">
+  <div id="sidebar-header">
+    <span>💬 LINE風メモ</span>
+    <button id="new-room-btn" title="新規ルーム">＋ ルーム</button>
   </div>
-
-  <!-- ===== メイン: チャット表示 ===== -->
-  <div id="main">
-    <div id="chat-header">
-      <div style="display:flex;align-items:center;">
-        <button id="menu-btn">☰</button>
-        <span id="chat-title" title="タップして名前を変更">-</span>
-      </div>
-      <div id="chat-actions">
-        <button id="bookmark-btn" title="ブックマーク">🔖</button>
-        <button id="select-mode-btn" title="選択">☑️</button>
-        <button id="export-room-btn" title="ルーム全体エクスポート">📤</button>
-        <button id="bulk-delete-btn" title="一括削除">🗑</button>
-      </div>
-    </div>
-
-    <div id="messages"></div>
-
-    <div id="selection-bar">
-      <span id="selection-count">0件選択中</span>
-      <div class="sel-actions">
-        <button id="sel-export-btn" class="primary">エクスポート</button>
-        <button id="sel-move-btn" class="info">移動</button>
-        <button id="sel-delete-btn" class="danger">削除</button>
-        <button id="sel-cancel-btn">キャンセル</button>
-      </div>
-    </div>
-
-    <div id="attach-preview"></div>
-    <div id="input-toolbar">
-      <div id="var-hint">使える日時変数: {{YYYY-MM-DD}} {{YYYY/MM/DD}} {{HH:mm}}</div>
-      <div id="input-toolbar-buttons">
-        <button id="attach-btn" title="ファイル添付">📎 添付</button>
-        <input type="file" id="file-input" multiple style="display:none;">
-        <button id="todo-btn" title="Todo形式で先頭に追加">✅️ Todo</button>
-      </div>
-    </div>
-    <div id="input-area">
-      <button id="toolbar-toggle-btn" title="ツールを表示">＋</button>
-      <textarea id="msg-input" rows="1" placeholder="メモを入力... (Shift+Enterで送信)"></textarea>
-      <button id="send-btn">送信</button>
-    </div>
+  <div id="room-list"></div>
+  <div id="sidebar-footer">
+    <button id="open-yaml-btn">⚙ YAML設定</button>
+    <button id="open-sync-btn">🔄 同期設定</button>
   </div>
+  <div id="sync-status-bar"><span id="sync-status">未接続</span></div>
 </div>
 
-<!-- ===== モーダル: 新規ルーム ===== -->
+<div id="main">
+  <div id="chat-header">
+    <div style="display:flex;align-items:center;">
+      <button id="menu-btn">☰</button>
+      <span id="chat-title" title="クリックでルーム名を変更">ルーム</span>
+    </div>
+    <div id="chat-actions">
+      <button id="bookmark-btn" title="ブックマーク">🔖</button>
+      <button id="select-mode-btn" title="選択モード">☑</button>
+      <button id="export-room-btn" title="ルームをエクスポート">📤</button>
+      <button id="mark-all-btn" title="送信マークを一括設定">●</button>
+      <button id="bulk-delete-btn" title="一括削除">🗑</button>
+    </div>
+  </div>
+
+  <div id="messages"></div>
+
+  <div id="selection-bar">
+    <span><span id="selection-count">0</span>件選択中</span>
+    <div class="sel-actions">
+      <button id="sel-export-btn" class="primary">エクスポート</button>
+      <button id="sel-move-btn" class="info">移動</button>
+      <button id="sel-mark-btn" class="mark">マーク</button>
+      <button id="sel-delete-btn" class="danger">削除</button>
+      <button id="sel-cancel-btn">キャンセル</button>
+    </div>
+  </div>
+
+  <div id="attach-preview"></div>
+  <div id="input-toolbar">
+    <div id="var-hint">日付変数: YYYY-MM-DD / YYYYMMDD / HHmm が使えます</div>
+    <div id="input-toolbar-buttons">
+      <button id="attach-btn" title="ファイル添付">📎 添付</button>
+      <input type="file" id="file-input" multiple style="display:none;">
+      <button id="todo-btn" title="Todoプレフィックス">☐ Todo</button>
+    </div>
+  </div>
+  <div id="input-area">
+    <button id="toolbar-toggle-btn" title="ツールバー">＋</button>
+    <textarea id="msg-input" rows="1" placeholder="メッセージを入力 (Shift+Enterで改行)"></textarea>
+    <button id="send-btn">送信</button>
+  </div>
+</div>
+</div>
+
 <div class="modal-overlay" id="modal-new-room">
   <div class="modal-box">
-    <div class="modal-header"><span>新しいチャットルーム</span><button class="close-x" data-close="modal-new-room">×</button></div>
+    <div class="modal-header"><span>新規ルーム</span><button class="close-x" data-close="modal-new-room">✕</button></div>
     <div class="modal-body">
       <label>ルーム名</label>
       <input type="text" id="new-room-name" placeholder="例: 買い物メモ">
@@ -501,25 +243,23 @@
   </div>
 </div>
 
-<!-- ===== モーダル: ルーム名変更 ===== -->
 <div class="modal-overlay" id="modal-rename-room">
   <div class="modal-box">
-    <div class="modal-header"><span>ルーム名を変更</span><button class="close-x" data-close="modal-rename-room">×</button></div>
+    <div class="modal-header"><span>ルーム名を変更</span><button class="close-x" data-close="modal-rename-room">✕</button></div>
     <div class="modal-body">
-      <label>新しい名前</label>
+      <label>ルーム名</label>
       <input type="text" id="rename-room-input">
     </div>
     <div class="modal-footer">
       <button data-close="modal-rename-room">キャンセル</button>
-      <button class="primary" id="confirm-rename-room">変更</button>
+      <button class="primary" id="confirm-rename-room">保存</button>
     </div>
   </div>
 </div>
 
-<!-- ===== モーダル: 一括削除 ===== -->
 <div class="modal-overlay" id="modal-bulk-delete">
   <div class="modal-box">
-    <div class="modal-header"><span>メッセージの一括削除</span><button class="close-x" data-close="modal-bulk-delete">×</button></div>
+    <div class="modal-header"><span>一括削除</span><button class="close-x" data-close="modal-bulk-delete">✕</button></div>
     <div class="modal-body">
       <p style="font-size:13px;color:#555;margin-top:0;">削除方法を選んでください。この操作は取り消せません。</p>
       <div style="display:flex;flex-direction:column;gap:8px;">
@@ -527,103 +267,101 @@
         <button id="bulk-delete-before-today-btn" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;text-align:left;">🗑 今日より前のメッセージを削除</button>
       </div>
     </div>
-    <div class="modal-footer">
-      <button data-close="modal-bulk-delete">キャンセル</button>
-    </div>
+    <div class="modal-footer"><button data-close="modal-bulk-delete">キャンセル</button></div>
   </div>
 </div>
 
-<!-- ===== モーダル: YAML設定 ===== -->
+<div class="modal-overlay" id="modal-mark-all">
+  <div class="modal-box">
+    <div class="modal-header"><span>送信マークの一括設定</span><button class="close-x" data-close="modal-mark-all">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:#555;margin-top:0;">このルーム内のすべてのメッセージに対して操作します。</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button id="mark-all-on-btn" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;text-align:left;color:var(--mark);">● すべてにマークをつける</button>
+        <button id="mark-all-off-btn" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:14px;text-align:left;color:#888;">○ すべてのマークを外す</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button data-close="modal-mark-all">キャンセル</button></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-yaml">
   <div class="modal-box" style="max-width:560px;">
-    <div class="modal-header"><span>YAML設定</span><button class="close-x" data-close="modal-yaml">×</button></div>
+    <div class="modal-header"><span>YAML設定</span><button class="close-x" data-close="modal-yaml">✕</button></div>
     <div class="modal-body">
       <textarea id="yaml-textarea" spellcheck="false"></textarea>
       <div id="yaml-error"></div>
     </div>
     <div class="modal-footer">
       <button id="yaml-reset-btn">初期値に戻す</button>
-      <button data-close="modal-yaml">閉じる</button>
-      <button class="primary" id="yaml-save-btn">保存して適用</button>
+      <button data-close="modal-yaml">キャンセル</button>
+      <button class="primary" id="yaml-save-btn">保存</button>
     </div>
   </div>
 </div>
 
-<!-- ===== モーダル: 同期設定 ===== -->
 <div class="modal-overlay" id="modal-sync">
   <div class="modal-box" style="max-width:520px;">
-    <div class="modal-header"><span>クラウド同期設定（GAS）</span><button class="close-x" data-close="modal-sync">×</button></div>
+    <div class="modal-header"><span>同期設定 (GAS)</span><button class="close-x" data-close="modal-sync">✕</button></div>
     <div class="modal-body">
-      <p style="font-size:12px;color:#666;margin-top:0;line-height:1.6;">
-        Google Apps ScriptのWebアプリURLと合言葉（トークン）を設定すると、複数のデバイス間でメモが自動的に同期されます。
-      </p>
-      <label>
-        <input type="checkbox" id="sync-enabled-checkbox"> 同期を有効にする
-      </label>
-      <label>Web App URL（.../exec）</label>
+      <p style="font-size:12px;color:#666;margin-top:0;line-height:1.6;">Google Apps ScriptのWebアプリURLと合言葉（トークン）を設定すると、複数のデバイス間でメモが自動的に同期されます。</p>
+      <label><input type="checkbox" id="sync-enabled-checkbox"> 同期を有効にする</label>
+      <label>Web App URL (…/exec)</label>
       <input type="text" id="sync-url-input" placeholder="https://script.google.com/macros/s/.../exec">
-      <label>トークン（合言葉）</label>
-      <input type="text" id="sync-token-input" placeholder="GAS側で設定したSECRET_TOKENと同じ値">
-      <p style="font-size:11px;color:#999;margin-top:10px;">
-        ※ 設定後、下のボタンで接続確認ができます。
-      </p>
+      <label>合言葉(トークン)</label>
+      <input type="text" id="sync-token-input" placeholder="GASのSECRET_TOKENと同じ値">
+      <p style="font-size:11px;color:#999;margin-top:10px;">※ 設定後、下のボタンで接続確認ができます。</p>
     </div>
     <div class="modal-footer">
       <button id="sync-test-btn">接続テスト</button>
-      <button data-close="modal-sync">閉じる</button>
+      <button data-close="modal-sync">キャンセル</button>
       <button class="primary" id="sync-save-btn">保存</button>
     </div>
   </div>
 </div>
 
-<!-- ===== モーダル: エクスポート ===== -->
 <div class="modal-overlay" id="modal-export">
   <div class="modal-box" style="max-width:560px;">
-    <div class="modal-header"><span>Markdownエクスポート</span><button class="close-x" data-close="modal-export">×</button></div>
+    <div class="modal-header"><span>Markdownエクスポート</span><button class="close-x" data-close="modal-export">✕</button></div>
     <div class="modal-body">
       <textarea id="export-preview" readonly></textarea>
     </div>
     <div class="modal-footer">
-      <button id="export-obsidian-btn" class="primary" style="display:none;">Obsidianに追加</button>
+      <button id="export-obsidian-btn" class="primary" style="display:none;">Obsidianで開く</button>
       <button id="export-copy-btn">コピー</button>
-      <button class="primary" id="export-download-btn">.mdをダウンロード</button>
+      <button class="primary" id="export-download-btn">.mdダウンロード</button>
     </div>
   </div>
 </div>
 
-<!-- ===== モーダル: 画像拡大 ===== -->
 <div class="modal-overlay" id="modal-image">
   <div class="modal-box" style="max-width:90%;background:transparent;box-shadow:none;">
-    <div class="modal-header" style="background:#fff;"><span>プレビュー</span><button class="close-x" data-close="modal-image">×</button></div>
+    <div class="modal-header" style="background:#fff;"><span>画像</span><button class="close-x" data-close="modal-image">✕</button></div>
     <div class="modal-body" style="background:#fff;text-align:center;">
       <img id="image-preview-full" style="max-width:100%;max-height:70vh;">
     </div>
   </div>
 </div>
 
-<!-- ===== モーダル: ブックマーク一覧 ===== -->
 <div class="modal-overlay" id="modal-bookmark">
   <div class="modal-box">
-    <div class="modal-header"><span>ブックマーク</span><button class="close-x" data-close="modal-bookmark">×</button></div>
+    <div class="modal-header"><span>ブックマーク</span><button class="close-x" data-close="modal-bookmark">✕</button></div>
     <div class="modal-body">
       <div id="bookmark-list"></div>
       <button id="bookmark-more-btn" style="width:100%;margin-top:8px;padding:8px;border:1px dashed var(--border);background:#fafafa;border-radius:8px;cursor:pointer;display:none;">もっと見る</button>
       <button id="bookmark-add-btn" style="width:100%;margin-top:10px;padding:9px;border:1px solid var(--line-green);color:var(--line-green);background:#fff;border-radius:8px;cursor:pointer;">＋ ブックマークを追加</button>
     </div>
-    <div class="modal-footer">
-      <button data-close="modal-bookmark">閉じる</button>
-    </div>
+    <div class="modal-footer"><button data-close="modal-bookmark">閉じる</button></div>
   </div>
 </div>
 
-<!-- ===== モーダル: ブックマーク編集 ===== -->
 <div class="modal-overlay" id="modal-bookmark-edit">
   <div class="modal-box">
-    <div class="modal-header"><span id="bookmark-edit-title">ブックマークを追加</span><button class="close-x" data-close="modal-bookmark-edit">×</button></div>
+    <div class="modal-header"><span id="bookmark-edit-title">ブックマークを追加</span><button class="close-x" data-close="modal-bookmark-edit">✕</button></div>
     <div class="modal-body">
       <label>タイトル</label>
-      <input type="text" id="bookmark-input-title" placeholder="例: 会社サイト">
-      <label style="margin-top:10px;">URL / URI</label>
+      <input type="text" id="bookmark-input-title" placeholder="任意">
+      <label style="margin-top:10px;">URL (必須)</label>
       <input type="text" id="bookmark-input-url" placeholder="https://example.com">
     </div>
     <div class="modal-footer">
@@ -633,12 +371,11 @@
   </div>
 </div>
 
-<!-- ===== モーダル: メッセージを別ルームへ移動 ===== -->
 <div class="modal-overlay" id="modal-move-message">
   <div class="modal-box">
-    <div class="modal-header"><span>別ルームへ移動</span><button class="close-x" data-close="modal-move-message">×</button></div>
+    <div class="modal-header"><span>メッセージを移動</span><button class="close-x" data-close="modal-move-message">✕</button></div>
     <div class="modal-body">
-      <label>移動先のルームを選択</label>
+      <label>移動先のルーム</label>
       <select id="move-target-room" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;box-sizing:border-box;"></select>
     </div>
     <div class="modal-footer">
@@ -651,137 +388,82 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* =========================================================================
-   LINE風メモアプリ  - 単一HTMLで完結する保守しやすい構成
-   構成:
-     1. ストレージ層 (Storage)       : localStorage への安全な読み書き
-     2. 状態管理層 (State)           : アプリ全体の状態を保持
-     3. ユーティリティ (Utils)       : 日付処理・簡易YAML・ファイル処理
-     4. レンダリング層 (Render)      : DOM描画
-     5. イベントハンドラ層 (Handlers): ユーザー操作の処理
-     6. 初期化 (Init)
-   ========================================================================= */
-
-/* ------------------------------------------------------------------ *
- * 1. ストレージ層
- * ------------------------------------------------------------------ */
-const STORAGE_KEY = 'lineMemoApp_data_v1';
-const STORAGE_KEY_BACKUP = 'lineMemoApp_data_v1_backup';
+const STORAGE_KEY = 'lineMemoAppData_v1';
+const STORAGE_KEY_BACKUP = 'lineMemoAppData_v1_backup';
 
 const Storage = {
-  /**
-   * state を安全に保存する。保存直前のバックアップも保持し、
-   * 次回読み込み時に壊れたデータを検知したらバックアップから復元できるようにする。
-   */
   save(state) {
     try {
       const json = JSON.stringify(state);
-      // 直前の正常データをバックアップとして退避
       const prev = localStorage.getItem(STORAGE_KEY);
       if (prev) localStorage.setItem(STORAGE_KEY_BACKUP, prev);
       localStorage.setItem(STORAGE_KEY, json);
       return true;
     } catch (e) {
       console.error('保存に失敗しました', e);
-      Utils.toast('保存に失敗しました（容量制限の可能性があります）');
+      Utils.toast('保存に失敗しました（容量オーバーの可能性があります）');
       return false;
     }
   },
-
-  /**
-   * state を読み込む。壊れている場合はバックアップ、
-   * それも失敗したら初期状態を返す。
-   */
   load() {
     const tryParse = (raw) => {
       if (!raw) return null;
       try {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.rooms)) {
-          return parsed;
-        }
+        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.rooms)) return parsed;
         return null;
-      } catch (e) {
-        return null;
-      }
+      } catch (e) { return null; }
     };
     let data = tryParse(localStorage.getItem(STORAGE_KEY));
     if (!data) {
       data = tryParse(localStorage.getItem(STORAGE_KEY_BACKUP));
-      if (data) Utils.toast('保存データの一部が壊れていたためバックアップから復元しました');
+      if (data) Utils.toast('バックアップデータから復元しました');
     }
-    if (!data) {
-      data = null; // 呼び出し側で初期状態を生成
-    }
+    if (!data) data = null;
     return data;
   }
 };
 
-/* ------------------------------------------------------------------ *
- * 3. ユーティリティ
- * ------------------------------------------------------------------ */
 const Utils = {
-  uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  },
-
+  uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); },
   pad(n) { return n.toString().padStart(2, '0'); },
-
-  /** 日時変数を実際の値へ展開する ({{YYYY-MM-DD}} 等) */
   expandDateVariables(text) {
     const d = new Date();
     const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
     const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
-    return text
-      .replace(/\{\{\s*YYYY-MM-DD\s*\}\}/g, `${y}-${m}-${day}`)
-      .replace(/\{\{\s*YYYY\/MM\/DD\s*\}\}/g, `${y}/${m}/${day}`)
-      .replace(/\{\{\s*HH:mm\s*\}\}/g, `${hh}:${mm}`);
+    return text.replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`).replace(/YYYYMMDD/g, `${y}${m}${day}`).replace(/HHmm/g, `${hh}${mm}`);
   },
-
-  /** YAMLフロントマター用: リテラルの日付/時刻トークン(YYYY-MM-DD, YYYY/MM/DD, HH:mm)を実際の値へ変換する */
   expandFrontmatterDateTokens(text) {
     const d = new Date();
     const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
     const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
-    return text
-      .replace(/YYYY\/MM\/DD/g, `${y}/${m}/${day}`)
-      .replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`)
-      .replace(/HH:mm/g, `${hh}:${mm}`);
+    return text.replace(/YYYYMMDD/g, `${y}${m}${day}`).replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`).replace(/HHmm/g, `${hh}${mm}`);
   },
-
   formatDate(timestamp, pattern) {
     const d = new Date(timestamp);
     const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
-    const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
-    if (pattern === 'YYYY/MM/DD') return `${y}/${m}/${day}`;
-    return `${y}-${m}-${day}`; // デフォルト YYYY-MM-DD
+    if (pattern === 'YYYYMMDD') return `${y}${m}${day}`;
+    return `${y}-${m}-${day}`;
   },
   formatTime(timestamp) {
     const d = new Date(timestamp);
     return `${Utils.pad(d.getHours())}:${Utils.pad(d.getMinutes())}`;
   },
-
   formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   },
-
   escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   },
-
-  // テキスト中のURL/URIをリンク化する（http, https, obsidian等の任意のスキームに対応）
   linkifyHtml(str) {
     const escaped = Utils.escapeHtml(str);
-    const urlPattern = /((?:[a-zA-Z][a-zA-Z0-9+.-]*):\/\/[A-Za-z0-9\-._~:/?#\[\]@!$&'*+,;=%]+)/g;
+    const urlPattern = /(https?:\/\/[^\s]+|obsidian:\/\/[^\s]+)/g;
     return escaped.replace(urlPattern, (match) => {
-      // 末尾の句読点・括弧などはリンクに含めない
       let url = match;
       let trailing = '';
-      const trailingChars = ['.', ',', ')', ']', '}'];
+      const trailingChars = ['.', ',', ')', '、', '。'];
       while (url.length > 0 && trailingChars.includes(url[url.length - 1])) {
         trailing = url[url.length - 1] + trailing;
         url = url.slice(0, -1);
@@ -789,24 +471,16 @@ const Utils = {
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="msg-link">${url}</a>${trailing}`;
     });
   },
-
+  toastTimer: null,
   toast(message) {
     const el = document.getElementById('toast');
     el.textContent = message;
     el.classList.add('show');
-    clearTimeout(Utils._toastTimer);
-    Utils._toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+    clearTimeout(Utils.toastTimer);
+    Utils.toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
   },
-
-  /**
-   * YAML全般をサポートする本格パーサー。js-yaml(CDN読込)を利用し、
-   * ネスト・配列・複数行文字列・コメント・アンカー等の標準YAML構文を自由に記述できるようにする。
-   * js-yamlが読み込めない場合(オフライン等)はエラーとして分かりやすく通知し、アプリは落とさない。
-   */
   parseSimpleYAML(text) {
-    if (typeof jsyaml === 'undefined') {
-      throw new Error('YAMLパーサーライブラリの読み込みに失敗しました（オフラインの可能性があります）。ページを再読み込みしてください。');
-    }
+    if (typeof jsyaml === 'undefined') throw new Error('YAMLライブラリが読み込まれていません');
     const result = jsyaml.load(text);
     if (result === undefined || result === null) return {};
     if (typeof result !== 'object' || Array.isArray(result)) {
@@ -814,8 +488,6 @@ const Utils = {
     }
     return result;
   },
-
-  /** File を dataURL として読み込む(画像プレビュー用) */
   readFileAsDataURL(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -824,8 +496,6 @@ const Utils = {
       reader.readAsDataURL(file);
     });
   },
-
-  /** 画像を Canvas でリサイズ・再圧縮してから dataURL(JPEG) として返す（localStorage容量節約用） */
   compressImage(file, maxDim = 1280, quality = 0.6) {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -833,13 +503,8 @@ const Utils = {
       img.onload = () => {
         let { width, height } = img;
         if (width > maxDim || height > maxDim) {
-          if (width > height) {
-            height = Math.round(height * maxDim / width);
-            width = maxDim;
-          } else {
-            width = Math.round(width * maxDim / height);
-            height = maxDim;
-          }
+          if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+          else { width = Math.round(width * maxDim / height); height = maxDim; }
         }
         const canvas = document.createElement('canvas');
         canvas.width = width;
@@ -849,228 +514,26 @@ const Utils = {
         URL.revokeObjectURL(url);
         resolve(canvas.toDataURL('image/jpeg', quality));
       };
-      img.onerror = (e) => {
-        URL.revokeObjectURL(url);
-        reject(e);
-      };
+      img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
       img.src = url;
     });
   },
-
-  /** dataURL(Base64)からおおよそのバイトサイズを算出 */
   dataUrlByteSize(dataUrl) {
     const base64 = dataUrl.split(',')[1] || '';
     return Math.round(base64.length * 0.75);
   }
 };
 
-
-/* ------------------------------------------------------------------ *
- * 2. 状態管理層
- * ------------------------------------------------------------------ */
-const DEFAULT_YAML = `display:
-  showTimestamp: true
-  dateFormat: "YYYY-MM-DD"
-  timeFormat: "HH:mm"
-format:
-  bubbleStyle: "rounded"
-export:
-  includeRoomName: true
-  includeExportDate: true
-  header: "# メモエクスポート"
-`;
-
-function createDefaultState() {
-  const now = Date.now();
-  const defaultRoomId = Utils.uid();
-  return {
-    rooms: [
-      { id: defaultRoomId, name: 'デフォルトルーム', createdAt: now, isDefault: true }
-    ],
-    messagesByRoom: {
-      [defaultRoomId]: []
-    },
-    currentRoomId: defaultRoomId,
-    yamlText: DEFAULT_YAML
-  };
-}
-
-let state = Storage.load() || createDefaultState();
-// 念のため整合性チェック（ルームが1件も無い/現在ルームが存在しない等）
-(function ensureIntegrity() {
-  if (!Array.isArray(state.rooms) || state.rooms.length === 0) {
-    state = createDefaultState();
-  }
-  if (!state.messagesByRoom || typeof state.messagesByRoom !== 'object') {
-    state.messagesByRoom = {};
-  }
-  state.rooms.forEach(r => {
-    if (!Array.isArray(state.messagesByRoom[r.id])) state.messagesByRoom[r.id] = [];
-  });
-  // デフォルトルームは常に一番上に固定する
-  const defIdx = state.rooms.findIndex(r => r.isDefault);
-  if (defIdx > 0) {
-    const [defRoom] = state.rooms.splice(defIdx, 1);
-    state.rooms.unshift(defRoom);
-  }
-  if (!state.rooms.some(r => r.isDefault) && state.rooms.length) {
-    state.rooms[0].isDefault = true;
-  }
-  if (!Array.isArray(state.bookmarks)) state.bookmarks = [];
-  if (!state.rooms.find(r => r.id === state.currentRoomId)) {
-    state.currentRoomId = state.rooms[0].id;
-  }
-  if (typeof state.yamlText !== 'string') state.yamlText = DEFAULT_YAML;
-})();
-
 let yamlConfig = {};
-let selectionMode = false;
-let selectedIds = new Set();
-let pendingAttachments = []; // 送信待ちの添付ファイル
 
-function persist() {
-  state.updatedAt = Date.now();
-  Storage.save(state);
-  Sync.scheduleUpload();
-}
-
-// ルーム切替・選択解除など「見た目の操作」だけを保存する関数。
-// updatedAt を更新しないため、同期時に「閲覧しただけ」で
-// 他端末のデータを上書きしてしまう不具合を防ぐ。
-function persistLocalOnly() {
-  Storage.save(state);
-}
-
-/* ------------------------------------------------------------------ *
- * クラウド同期（GAS + Googleドライブ）
- * ---------------
- * - persist() のたびに一定時間後に自動アップロード（デバウンス）
- * - 起動時・タブ復帰時・30秒おきに自動でダウンロードして最新反映
- * - updatedAt を比較し、新しい方を採用する（Last-Write-Wins）
- * ------------------------------------------------------------------ */
-const SYNC_CONFIG_KEY = 'lineMemoSyncConfig_v1';
-const Sync = {
-  config: { url: '', token: '', enabled: false },
-  uploadTimer: null,
-  pollTimer: null,
-  syncing: false,
-
-  loadConfig() {
-    try {
-      const raw = localStorage.getItem(SYNC_CONFIG_KEY);
-      if (raw) Sync.config = Object.assign(Sync.config, JSON.parse(raw));
-    } catch (e) { /* noop */ }
-  },
-  saveConfig() {
-    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(Sync.config));
-  },
-  setStatus(text) {
-    const el = document.getElementById('sync-status');
-    if (el) el.textContent = text;
-  },
-
-  scheduleUpload() {
-    if (!Sync.config.enabled || !Sync.config.url) return;
-    clearTimeout(Sync.uploadTimer);
-    Sync.uploadTimer = setTimeout(Sync.upload, 1500);
-  },
-
-  async upload() {
-    if (!Sync.config.enabled || !Sync.config.url || Sync.syncing) return;
-    Sync.syncing = true;
-    Sync.setStatus('同期中…');
-    try {
-      const res = await fetch(Sync.config.url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          token: Sync.config.token,
-          updatedAt: state.updatedAt || Date.now(),
-          payload: { rooms: state.rooms, messagesByRoom: state.messagesByRoom, currentRoomId: state.currentRoomId, yamlText: state.yamlText, bookmarks: state.bookmarks }
-        })
-      });
-      const json = await res.json();
-      if (json.error) {
-        Sync.setStatus('同期エラー: ' + json.error);
-      } else if (json.conflict) {
-        // サーバー側が新しい場合はサーバーデータを取り込む
-        Sync.applyRemote(json.updatedAt, json.payload);
-        Sync.setStatus('同期済み（他端末優先）');
-      } else {
-        Sync.setStatus('同期済み');
-      }
-    } catch (e) {
-      Sync.setStatus('同期失敗（オフライン？）');
-    } finally {
-      Sync.syncing = false;
-    }
-  },
-
-  async download() {
-    if (!Sync.config.enabled || !Sync.config.url || Sync.syncing) return;
-    Sync.syncing = true;
-    try {
-      const url = Sync.config.url + '?token=' + encodeURIComponent(Sync.config.token);
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.error) {
-        Sync.setStatus('同期エラー: ' + json.error);
-        return;
-      }
-      if (json.payload && (json.updatedAt || 0) > (state.updatedAt || 0)) {
-        Sync.applyRemote(json.updatedAt, json.payload);
-        Sync.setStatus('最新データを取得しました');
-      } else {
-        Sync.setStatus('同期済み');
-      }
-    } catch (e) {
-      Sync.setStatus('同期失敗（オフライン？）');
-    } finally {
-      Sync.syncing = false;
-    }
-  },
-
-  applyRemote(updatedAt, payload) {
-    state.rooms = payload.rooms;
-    state.messagesByRoom = payload.messagesByRoom;
-    state.bookmarks = Array.isArray(payload.bookmarks) ? payload.bookmarks : (state.bookmarks || []);
-    if (!state.rooms.find(r => r.id === state.currentRoomId)) {
-      state.currentRoomId = state.rooms[0].id;
-    }
-    if (typeof payload.yamlText === 'string') state.yamlText = payload.yamlText;
-    state.updatedAt = updatedAt;
-    Storage.save(state);
-    applyYamlConfig();
-    renderAll();
-  },
-
-  startPolling() {
-    clearInterval(Sync.pollTimer);
-    if (!Sync.config.enabled) return;
-    Sync.pollTimer = setInterval(Sync.download, 30000);
-  },
-
-  init() {
-    Sync.loadConfig();
-    Sync.startPolling();
-    if (Sync.config.enabled) Sync.download();
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') Sync.download();
-    });
-  }
-};
-
-/* ------------------------------------------------------------------ *
- * YAML設定の適用
- * ------------------------------------------------------------------ */
 function applyYamlConfig() {
   try {
     const parsed = Utils.parseSimpleYAML(state.yamlText);
-    yamlConfig = parsed || {};
+    yamlConfig = parsed;
     document.getElementById('yaml-error').classList.remove('show');
     return true;
   } catch (e) {
-    yamlConfig = yamlConfig || {}; // 直前の設定を維持し、アプリを落とさない
+    yamlConfig = yamlConfig || {};
     const errEl = document.getElementById('yaml-error');
     errEl.textContent = 'YAMLエラー: ' + e.message;
     errEl.classList.add('show');
@@ -1088,9 +551,137 @@ function getYamlSetting(path, fallback) {
   return cur === undefined ? fallback : cur;
 }
 
-/* ------------------------------------------------------------------ *
- * 4. レンダリング層
- * ------------------------------------------------------------------ */
+const DEFAULT_YAML = `display:
+  showTimestamp: true
+  dateFormat: "YYYY-MM-DD"
+  timeFormat: "HHmm"
+  bubbleStyle: rounded
+export:
+  includeRoomName: true
+  includeExportDate: true
+`;
+
+function createDefaultState() {
+  const now = Date.now();
+  const defaultRoomId = Utils.uid();
+  return {
+    rooms: [{ id: defaultRoomId, name: 'メモ', createdAt: now, isDefault: true }],
+    messagesByRoom: { [defaultRoomId]: [] },
+    currentRoomId: defaultRoomId,
+    yamlText: DEFAULT_YAML,
+    bookmarks: [],
+    updatedAt: 0
+  };
+}
+
+let state = Storage.load() || createDefaultState();
+
+function ensureIntegrity() {
+  if (!Array.isArray(state.rooms) || state.rooms.length === 0) state = createDefaultState();
+  if (!state.messagesByRoom || typeof state.messagesByRoom !== 'object') state.messagesByRoom = {};
+  state.rooms.forEach(r => { if (!Array.isArray(state.messagesByRoom[r.id])) state.messagesByRoom[r.id] = []; });
+  const defIdx = state.rooms.findIndex(r => r.isDefault);
+  if (defIdx > 0) { const defRoom = state.rooms.splice(defIdx, 1)[0]; state.rooms.unshift(defRoom); }
+  if (!state.rooms.some(r => r.isDefault) && state.rooms.length) state.rooms[0].isDefault = true;
+  if (!Array.isArray(state.bookmarks)) state.bookmarks = [];
+  if (!state.rooms.find(r => r.id === state.currentRoomId)) state.currentRoomId = state.rooms[0].id;
+  if (typeof state.yamlText !== 'string') state.yamlText = DEFAULT_YAML;
+}
+
+let selectionMode = false;
+let selectedIds = new Set();
+let pendingAttachments = [];
+
+function persist() {
+  state.updatedAt = Date.now();
+  Storage.save(state);
+  Sync.scheduleUpload();
+}
+
+function persistLocalOnly() {
+  Storage.save(state);
+}
+
+const SYNC_CONFIG_KEY = 'lineMemoSyncConfig_v1';
+
+const Sync = {
+  config: { url: '', token: '', enabled: false },
+  uploadTimer: null,
+  pollTimer: null,
+  syncing: false,
+  loadConfig() {
+    try {
+      const raw = localStorage.getItem(SYNC_CONFIG_KEY);
+      if (raw) Sync.config = Object.assign(Sync.config, JSON.parse(raw));
+    } catch (e) { /* noop */ }
+  },
+  saveConfig() { localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(Sync.config)); },
+  setStatus(text) { const el = document.getElementById('sync-status'); if (el) el.textContent = text; },
+  scheduleUpload() {
+    if (!Sync.config.enabled || !Sync.config.url) return;
+    clearTimeout(Sync.uploadTimer);
+    Sync.uploadTimer = setTimeout(Sync.upload, 1500);
+  },
+  async upload() {
+    if (!Sync.config.enabled || !Sync.config.url || Sync.syncing) return;
+    Sync.syncing = true;
+    Sync.setStatus('同期中...');
+    try {
+      const res = await fetch(Sync.config.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          token: Sync.config.token,
+          updatedAt: state.updatedAt || Date.now(),
+          payload: { rooms: state.rooms, messagesByRoom: state.messagesByRoom, currentRoomId: state.currentRoomId, yamlText: state.yamlText, bookmarks: state.bookmarks }
+        })
+      });
+      const json = await res.json();
+      if (json.error) { Sync.setStatus('エラー: ' + json.error); }
+      else if (json.conflict) { Sync.applyRemote(json.updatedAt, json.payload); Sync.setStatus('リモートの方が新しいため取り込みました'); }
+      else { Sync.setStatus('同期完了'); }
+    } catch (e) { Sync.setStatus('接続エラー'); }
+    finally { Sync.syncing = false; }
+  },
+  async download() {
+    if (!Sync.config.enabled || !Sync.config.url || Sync.syncing) return;
+    Sync.syncing = true;
+    try {
+      const url = Sync.config.url + '?token=' + encodeURIComponent(Sync.config.token);
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.error) { Sync.setStatus('エラー: ' + json.error); return; }
+      if (json.payload && (json.updatedAt || 0) > (state.updatedAt || 0)) { Sync.applyRemote(json.updatedAt, json.payload); Sync.setStatus('リモートから取得しました'); }
+      else { Sync.setStatus('最新の状態です'); }
+    } catch (e) { Sync.setStatus('接続エラー'); }
+    finally { Sync.syncing = false; }
+  },
+  applyRemote(updatedAt, payload) {
+    state.rooms = payload.rooms;
+    state.messagesByRoom = payload.messagesByRoom;
+    state.bookmarks = Array.isArray(payload.bookmarks) ? payload.bookmarks : state.bookmarks;
+    if (!state.rooms.find(r => r.id === state.currentRoomId)) state.currentRoomId = state.rooms[0].id;
+    if (typeof payload.yamlText === 'string') state.yamlText = payload.yamlText;
+    state.updatedAt = updatedAt;
+    Storage.save(state);
+    applyYamlConfig();
+    renderAll();
+  },
+  startPolling() {
+    clearInterval(Sync.pollTimer);
+    if (!Sync.config.enabled) return;
+    Sync.pollTimer = setInterval(Sync.download, 30000);
+  },
+  init() {
+    Sync.loadConfig();
+    Sync.startPolling();
+    if (Sync.config.enabled) Sync.download();
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') Sync.download(); });
+  }
+};
+
+let dragRoomId = null;
+
 function renderRooms() {
   const listEl = document.getElementById('room-list');
   listEl.innerHTML = '';
@@ -1102,70 +693,47 @@ function renderRooms() {
     item.dataset.roomId = room.id;
     item.draggable = !room.isDefault;
     item.innerHTML = `
-      <span class="room-drag-handle" title="${room.isDefault ? 'デフォルトルームは固定です' : 'ドラッグで並べ替え'}">${room.isDefault ? '📌' : '⠿'}</span>
-      <div class="room-avatar">${Utils.escapeHtml(room.name.slice(0,1) || '?')}</div>
+      <span class="room-drag-handle" title="${room.isDefault ? '固定ルーム' : 'ドラッグで並べ替え'}">${room.isDefault ? '📌' : '⋮⋮'}</span>
+      <div class="room-avatar">${Utils.escapeHtml(room.name.slice(0, 1)) || '?'}</div>
       <div class="room-info">
         <div class="room-name">${Utils.escapeHtml(room.name)}</div>
-        <div class="room-last">${last ? Utils.escapeHtml(previewText(last)) : 'まだメモがありません'}</div>
+        <div class="room-last">${last ? Utils.escapeHtml(previewText(last)) : ''}</div>
       </div>
-      <button class="room-del" data-room-id="${room.id}" title="ルーム削除">🗑</button>
+      <button class="room-del" data-room-id="${room.id}" title="削除">✕</button>
     `;
-    item.addEventListener('click', (e) => {
-      if (e.target.closest('.room-del')) return;
-      switchRoom(room.id);
-    });
-    item.querySelector('.room-del').addEventListener('click', (e) => {
-      e.stopPropagation();
-      deleteRoom(room.id);
-    });
+    item.addEventListener('click', (e) => { if (e.target.closest('.room-del')) return; switchRoom(room.id); });
+    item.querySelector('.room-del').addEventListener('click', (e) => { e.stopPropagation(); deleteRoom(room.id); });
     item.addEventListener('dragstart', (e) => {
       if (room.isDefault) { e.preventDefault(); return; }
-      dragRoomId = room.id;
-      item.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
+      dragRoomId = room.id; item.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move';
     });
-    item.addEventListener('dragend', () => {
-      dragRoomId = null;
-      item.classList.remove('dragging');
-      listEl.querySelectorAll('.room-item').forEach(el => el.classList.remove('drag-over'));
-    });
-    item.addEventListener('dragover', (e) => {
-      if (!dragRoomId || room.isDefault || room.id === dragRoomId) return;
-      e.preventDefault();
-      item.classList.add('drag-over');
-    });
+    item.addEventListener('dragend', () => { dragRoomId = null; item.classList.remove('dragging'); listEl.querySelectorAll('.room-item').forEach(el => el.classList.remove('drag-over')); });
+    item.addEventListener('dragover', (e) => { if (!dragRoomId || room.isDefault || room.id === dragRoomId) return; e.preventDefault(); item.classList.add('drag-over'); });
     item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
     item.addEventListener('drop', (e) => {
-      e.preventDefault();
-      item.classList.remove('drag-over');
+      e.preventDefault(); item.classList.remove('drag-over');
       if (!dragRoomId || room.isDefault || room.id === dragRoomId) return;
-      reorderRoom(dragRoomId, room.id);
-      dragRoomId = null;
+      reorderRoom(dragRoomId, room.id); dragRoomId = null;
     });
     listEl.appendChild(item);
   });
 }
 
-let dragRoomId = null;
-
 function reorderRoom(draggedId, targetId) {
   const fromIdx = state.rooms.findIndex(r => r.id === draggedId);
   const toIdx = state.rooms.findIndex(r => r.id === targetId);
   if (fromIdx === -1 || toIdx === -1) return;
-  const [moved] = state.rooms.splice(fromIdx, 1);
+  const moved = state.rooms.splice(fromIdx, 1)[0];
   state.rooms.splice(toIdx, 0, moved);
   const defIdx = state.rooms.findIndex(r => r.isDefault);
-  if (defIdx > 0) {
-    const [defRoom] = state.rooms.splice(defIdx, 1);
-    state.rooms.unshift(defRoom);
-  }
+  if (defIdx > 0) { const defRoom = state.rooms.splice(defIdx, 1)[0]; state.rooms.unshift(defRoom); }
   persist();
   renderRooms();
 }
 
 function previewText(msg) {
   if (msg.text) return msg.text.slice(0, 20);
-  if (msg.attachments && msg.attachments.length) return '📎 ' + msg.attachments[0].name;
+  if (msg.attachments && msg.attachments.length) return msg.attachments[0].name;
   return '';
 }
 
@@ -1175,7 +743,6 @@ function renderMessages() {
   const msgs = state.messagesByRoom[state.currentRoomId] || [];
   const showTimestamp = getYamlSetting('display.showTimestamp', true);
   const dateFormat = getYamlSetting('display.dateFormat', 'YYYY-MM-DD');
-
   let lastDateLabel = null;
   msgs.forEach(msg => {
     const dateLabel = Utils.formatDate(msg.createdAt, dateFormat);
@@ -1193,24 +760,23 @@ function renderMessages() {
 
 function renderMessageRow(msg, showTimestamp) {
   const row = document.createElement('div');
-  row.className = 'msg-row' + (selectionMode ? ' selecting' : '') + (selectedIds.has(msg.id) ? ' selected' : '');
+  row.className = `msg-row ${selectionMode ? 'selecting' : ''} ${selectedIds.has(msg.id) ? 'selected' : ''} ${msg.sent ? 'sent' : ''}`;
   row.dataset.id = msg.id;
 
   let checkboxHtml = '';
-  if (selectionMode) {
-    checkboxHtml = `<input type="checkbox" class="msg-checkbox" ${selectedIds.has(msg.id) ? 'checked' : ''}>`;
-  }
+  if (selectionMode) checkboxHtml = `<input type="checkbox" class="msg-checkbox" ${selectedIds.has(msg.id) ? 'checked' : ''}>`;
 
   const bubbleWrap = document.createElement('div');
   bubbleWrap.className = 'msg-bubble-wrap';
 
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble' + (!msg.text && msg.attachments && msg.attachments.length ? ' file-msg' : '');
+  // 吹き出し本体とマークをまとめるアンカー（マークはposition:absoluteで完全に外部化し、吹き出しの幅・位置に影響しないようにする）
+  const bubbleAnchor = document.createElement('div');
+  bubbleAnchor.className = 'msg-bubble-anchor';
 
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble' + ((!msg.text && msg.attachments && msg.attachments.length) ? ' file-msg' : '');
   let innerHtml = '';
-  if (msg.text) {
-    innerHtml += `<div>${Utils.linkifyHtml(msg.text)}</div>`;
-  }
+  if (msg.text) innerHtml += `<div>${Utils.linkifyHtml(msg.text)}</div>`;
   (msg.attachments || []).forEach(att => {
     if (att.isImage && att.dataUrl) {
       innerHtml += `<img class="msg-img" src="${att.dataUrl}" alt="${Utils.escapeHtml(att.name)}">`;
@@ -1220,18 +786,28 @@ function renderMessageRow(msg, showTimestamp) {
           <div class="file-icon">📄</div>
           <div class="file-meta">
             <div class="file-name">${Utils.escapeHtml(att.name)}</div>
-            <div class="file-sub">${Utils.escapeHtml(att.type || '不明な形式')} ・ ${Utils.formatBytes(att.size)}</div>
+            <div class="file-sub">${Utils.escapeHtml(att.type)} · ${Utils.formatBytes(att.size)}</div>
           </div>
         </div>`;
     }
   });
   bubble.innerHTML = innerHtml;
-  bubbleWrap.appendChild(bubble);
+  bubbleAnchor.appendChild(bubble);
+
+  if (msg.sent) {
+    const sentLabel = document.createElement('div');
+    sentLabel.className = 'msg-sent-label';
+    sentLabel.textContent = '✓';
+    sentLabel.title = '送信済み';
+    bubbleAnchor.appendChild(sentLabel);
+  }
+
+  bubbleWrap.appendChild(bubbleAnchor);
 
   if (showTimestamp) {
     const timeEl = document.createElement('div');
     timeEl.className = 'msg-time';
-    timeEl.textContent = Utils.formatTime(msg.createdAt) + (msg.editedAt ? '（編集済み）' : '');
+    timeEl.textContent = Utils.formatTime(msg.createdAt) + (msg.editedAt ? ' (編集済み)' : '');
     bubbleWrap.appendChild(timeEl);
   }
 
@@ -1241,57 +817,50 @@ function renderMessageRow(msg, showTimestamp) {
   topRow.appendChild(bubbleWrap);
   row.appendChild(topRow);
 
-  // コピー・編集・削除ボタン（吹き出しの下に配置。選択モード中は非表示、ホバー時のみ表示）
   const actionsWrap = document.createElement('div');
   actionsWrap.className = 'msg-actions';
 
   if (msg.text) {
     const copyBtn = document.createElement('button');
     copyBtn.className = 'msg-copy-btn';
-    copyBtn.title = 'このメッセージをコピー';
+    copyBtn.title = 'コピー';
     copyBtn.textContent = '📋';
-    copyBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      copyMessageText(msg.text);
-    });
+    copyBtn.addEventListener('click', (e) => { e.stopPropagation(); copyMessageText(msg.text); });
     actionsWrap.appendChild(copyBtn);
   }
 
-  if (msg.text || (msg.attachments && msg.attachments.length === 0)) {
+  if (msg.text) {
     const editBtn = document.createElement('button');
     editBtn.className = 'msg-edit-btn';
-    editBtn.title = 'このメッセージを編集';
+    editBtn.title = '編集';
     editBtn.textContent = '✏️';
-    editBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      startEditMessage(msg.id, bubble, bubbleWrap);
-    });
+    editBtn.addEventListener('click', (e) => { e.stopPropagation(); startEditMessage(msg.id, bubble, bubbleWrap); });
     actionsWrap.appendChild(editBtn);
   }
+
+  const markBtn = document.createElement('button');
+  markBtn.className = 'msg-mark-btn' + (msg.sent ? ' active' : '');
+  markBtn.title = msg.sent ? '送信マークを外す' : '送信済みマークをつける';
+  markBtn.textContent = msg.sent ? '●' : '○';
+  markBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleMessageSent(msg.id); });
+  actionsWrap.appendChild(markBtn);
 
   const moveBtn = document.createElement('button');
   moveBtn.className = 'msg-move-btn';
   moveBtn.title = '別ルームへ移動';
   moveBtn.textContent = '📁';
-  moveBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openMoveMessageModal(msg.id);
-  });
+  moveBtn.addEventListener('click', (e) => { e.stopPropagation(); openMoveMessageModal(msg.id); });
   actionsWrap.appendChild(moveBtn);
 
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'msg-delete-btn';
-  deleteBtn.title = 'このメッセージを削除';
+  deleteBtn.title = '削除';
   deleteBtn.textContent = '🗑';
-  deleteBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    deleteMessage(msg.id);
-  });
+  deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteMessage(msg.id); });
   actionsWrap.appendChild(deleteBtn);
 
   row.appendChild(actionsWrap);
 
-  // 画像クリックで拡大表示
   row.querySelectorAll('.msg-img').forEach(img => {
     img.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1300,10 +869,7 @@ function renderMessageRow(msg, showTimestamp) {
     });
   });
 
-  row.addEventListener('click', (e) => {
-    if (!selectionMode) return;
-    toggleSelect(msg.id);
-  });
+  row.addEventListener('click', () => { if (!selectionMode) return; toggleSelect(msg.id); });
 
   return row;
 }
@@ -1321,11 +887,6 @@ function renderAll() {
   renderAttachPreview();
 }
 
-/* ------------------------------------------------------------------ *
- * 5. イベントハンドラ / 主要ロジック
- * ------------------------------------------------------------------ */
-
-// ---- ルーム操作 ----
 function switchRoom(roomId) {
   state.currentRoomId = roomId;
   selectionMode = false;
@@ -1337,10 +898,7 @@ function switchRoom(roomId) {
 
 function createRoom(name) {
   const trimmed = (name || '').trim();
-  if (!trimmed) {
-    Utils.toast('ルーム名を入力してください');
-    return;
-  }
+  if (!trimmed) { Utils.toast('ルーム名を入力してください'); return; }
   const id = Utils.uid();
   state.rooms.push({ id, name: trimmed, createdAt: Date.now() });
   state.messagesByRoom[id] = [];
@@ -1350,51 +908,30 @@ function createRoom(name) {
 }
 
 function deleteRoom(roomId) {
-  if (state.rooms.length <= 1) {
-    Utils.toast('最後のルームは削除できません');
-    return;
-  }
-  if (!confirm('このルームと中のメモを全て削除します。よろしいですか？')) return;
+  if (state.rooms.length <= 1) { Utils.toast('最後のルームは削除できません'); return; }
+  if (!confirm('このルームを削除しますか？(メッセージも全て削除されます)')) return;
   state.rooms = state.rooms.filter(r => r.id !== roomId);
   delete state.messagesByRoom[roomId];
-  if (state.currentRoomId === roomId) {
-    state.currentRoomId = state.rooms[0].id;
-  }
+  if (state.currentRoomId === roomId) state.currentRoomId = state.rooms[0].id;
   persist();
   renderAll();
 }
 
 function renameRoom(roomId, newName) {
   const trimmed = (newName || '').trim();
-  if (!trimmed) {
-    Utils.toast('ルーム名を入力してください');
-    return;
-  }
+  if (!trimmed) { Utils.toast('ルーム名を入力してください'); return; }
   const room = state.rooms.find(r => r.id === roomId);
   if (room) room.name = trimmed;
   persist();
   renderAll();
 }
 
-// ---- メッセージ送信 ----
 async function sendMessage() {
   const input = document.getElementById('msg-input');
   const rawText = input.value;
   const text = Utils.expandDateVariables(rawText).trim();
-
-  if (!text && pendingAttachments.length === 0) {
-    Utils.toast('メモが空です。テキストまたはファイルを追加してください');
-    return;
-  }
-
-  const msg = {
-    id: Utils.uid(),
-    roomId: state.currentRoomId,
-    text: text,
-    attachments: pendingAttachments.slice(),
-    createdAt: Date.now()
-  };
-
+  if (!text && pendingAttachments.length === 0) { Utils.toast('内容を入力してください'); return; }
+  const msg = { id: Utils.uid(), roomId: state.currentRoomId, text: text, attachments: pendingAttachments.slice(), createdAt: Date.now(), sent: false };
   state.messagesByRoom[state.currentRoomId].push(msg);
   pendingAttachments = [];
   input.value = '';
@@ -1404,7 +941,6 @@ async function sendMessage() {
   renderAll();
 }
 
-// ---- メッセージ単体コピー ----
 function copyMessageText(text) {
   const doCopy = () => {
     const ta = document.createElement('textarea');
@@ -1416,46 +952,33 @@ function copyMessageText(text) {
     document.execCommand('copy');
     document.body.removeChild(ta);
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).catch(doCopy);
-  } else {
-    doCopy();
-  }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(doCopy);
+  else doCopy();
   Utils.toast('コピーしました');
 }
 
-// ---- メッセージ単体削除 ----
 function deleteMessage(msgId) {
-  if (!confirm('このメモを削除しますか？')) return;
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  if (!confirm('このメッセージを削除しますか？')) return;
+  const msgs = state.messagesByRoom[state.currentRoomId];
   state.messagesByRoom[state.currentRoomId] = msgs.filter(m => m.id !== msgId);
   selectedIds.delete(msgId);
   persist();
   renderAll();
-  Utils.toast('メモを削除しました');
+  Utils.toast('削除しました');
 }
 
-// ---- メッセージを別ルームへ移動（単一・複数選択の両方に対応） ----
 let movingMessageIds = null;
 
-function openMoveMessageModal(msgId) {
-  openMoveModalForIds([msgId]);
-}
+function openMoveMessageModal(msgId) { openMoveModalForIds([msgId]); }
 
 function openMoveSelectedMessages() {
-  if (selectedIds.size === 0) {
-    Utils.toast('選択されていません');
-    return;
-  }
+  if (selectedIds.size === 0) { Utils.toast('メッセージを選択してください'); return; }
   openMoveModalForIds(Array.from(selectedIds));
 }
 
 function openMoveModalForIds(ids) {
   const otherRooms = state.rooms.filter(r => r.id !== state.currentRoomId);
-  if (otherRooms.length === 0) {
-    Utils.toast('移動先となる他のルームがありません');
-    return;
-  }
+  if (otherRooms.length === 0) { Utils.toast('移動先のルームがありません'); return; }
   movingMessageIds = ids;
   const select = document.getElementById('move-target-room');
   select.innerHTML = otherRooms.map(r => `<option value="${r.id}">${Utils.escapeHtml(r.name)}</option>`).join('');
@@ -1467,7 +990,7 @@ function confirmMoveMessage() {
   const targetRoomId = document.getElementById('move-target-room').value;
   if (!targetRoomId) return;
   const idsToMove = new Set(movingMessageIds);
-  const srcMsgs = state.messagesByRoom[state.currentRoomId] || [];
+  const srcMsgs = state.messagesByRoom[state.currentRoomId];
   const moved = srcMsgs.filter(m => idsToMove.has(m.id));
   state.messagesByRoom[state.currentRoomId] = srcMsgs.filter(m => !idsToMove.has(m.id));
   if (!Array.isArray(state.messagesByRoom[targetRoomId])) state.messagesByRoom[targetRoomId] = [];
@@ -1480,17 +1003,44 @@ function confirmMoveMessage() {
   persist();
   renderAll();
   closeModal('modal-move-message');
-  Utils.toast(`${movedCount}件のメモを移動しました`);
+  Utils.toast(`${movedCount}件のメッセージを移動しました`);
 }
 
-// ---- 選択メッセージの一括削除 ----
+function toggleMessageSent(msgId) {
+  const msgs = state.messagesByRoom[state.currentRoomId];
+  const msg = msgs.find(m => m.id === msgId);
+  if (!msg) return;
+  msg.sent = !msg.sent;
+  persist();
+  renderAll();
+  Utils.toast(msg.sent ? 'マークをつけました' : 'マークを外しました');
+}
+
+function markSelectedMessages() {
+  if (selectedIds.size === 0) { Utils.toast('メッセージを選択してください'); return; }
+  const msgs = state.messagesByRoom[state.currentRoomId];
+  const targets = msgs.filter(m => selectedIds.has(m.id));
+  const shouldMark = !targets.every(m => m.sent);
+  targets.forEach(m => { m.sent = shouldMark; });
+  persist();
+  renderAll();
+  Utils.toast(shouldMark ? 'マークをつけました' : 'マークを外しました');
+}
+
+function markAllMessages(markValue) {
+  const msgs = state.messagesByRoom[state.currentRoomId];
+  if (!msgs || msgs.length === 0) { Utils.toast('メッセージがありません'); closeModal('modal-mark-all'); return; }
+  msgs.forEach(m => { m.sent = markValue; });
+  persist();
+  renderAll();
+  closeModal('modal-mark-all');
+  Utils.toast(markValue ? 'すべてにマークをつけました' : 'すべてのマークを外しました');
+}
+
 function deleteSelectedMessages() {
-  if (selectedIds.size === 0) {
-    Utils.toast('選択されていません');
-    return;
-  }
-  if (!confirm(`選択した${selectedIds.size}件のメモを削除しますか？`)) return;
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  if (selectedIds.size === 0) { Utils.toast('メッセージを選択してください'); return; }
+  if (!confirm(`${selectedIds.size}件のメッセージを削除しますか？`)) return;
+  const msgs = state.messagesByRoom[state.currentRoomId];
   state.messagesByRoom[state.currentRoomId] = msgs.filter(m => !selectedIds.has(m.id));
   selectedIds.clear();
   selectionMode = false;
@@ -1499,53 +1049,43 @@ function deleteSelectedMessages() {
   Utils.toast('削除しました');
 }
 
-// ---- ルーム内の全メッセージ削除 ----
 function bulkDeleteAllMessages() {
   if (!confirm('このルームの全メッセージを削除しますか？この操作は取り消せません。')) return;
   state.messagesByRoom[state.currentRoomId] = [];
   selectedIds.clear();
   persist();
   renderAll();
-  Utils.toast('全メッセージを削除しました');
+  Utils.toast('全て削除しました');
 }
 
-// ---- 今日より前のメッセージ削除 ----
 function bulkDeleteBeforeToday() {
   if (!confirm('今日より前のメッセージを削除しますか？この操作は取り消せません。')) return;
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const msgs = state.messagesByRoom[state.currentRoomId];
   state.messagesByRoom[state.currentRoomId] = msgs.filter(m => m.createdAt >= todayStart);
   selectedIds.clear();
   persist();
   renderAll();
-  Utils.toast('今日より前のメッセージを削除しました');
+  Utils.toast('削除しました');
 }
 
-// ---- メッセージ単体編集 ----
 function startEditMessage(msgId, bubbleEl, bubbleWrapEl) {
   if (selectionMode) return;
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const msgs = state.messagesByRoom[state.currentRoomId];
   const msg = msgs.find(m => m.id === msgId);
   if (!msg) return;
-
-  // 既に編集中なら二重起動を防ぐ
   if (bubbleWrapEl.querySelector('.msg-edit-textarea')) return;
 
-  const originalHtml = bubbleEl.innerHTML;
   bubbleEl.innerHTML = '';
-
   const textarea = document.createElement('textarea');
   textarea.className = 'msg-edit-textarea';
-  textarea.value = msg.text || '';
+  textarea.value = msg.text;
   bubbleEl.appendChild(textarea);
 
   const actions = document.createElement('div');
   actions.className = 'msg-edit-actions';
-  actions.innerHTML = `
-    <button class="msg-edit-cancel">キャンセル</button>
-    <button class="msg-edit-save primary">完了</button>
-  `;
+  actions.innerHTML = `<button class="msg-edit-cancel">キャンセル</button><button class="msg-edit-save primary">保存</button>`;
   bubbleWrapEl.appendChild(actions);
 
   textarea.focus();
@@ -1553,67 +1093,36 @@ function startEditMessage(msgId, bubbleEl, bubbleWrapEl) {
   autoResizeTextarea(textarea);
   textarea.addEventListener('input', () => autoResizeTextarea(textarea));
 
-  const cleanup = () => {
-    actions.remove();
-  };
+  const cleanup = () => { actions.remove(); };
 
-  actions.querySelector('.msg-edit-cancel').addEventListener('click', (e) => {
-    e.stopPropagation();
-    cleanup();
-    renderMessages();
-  });
-
-  actions.querySelector('.msg-edit-save').addEventListener('click', (e) => {
-    e.stopPropagation();
-    saveEditedMessage(msgId, textarea.value);
-  });
-
+  actions.querySelector('.msg-edit-cancel').addEventListener('click', (e) => { e.stopPropagation(); cleanup(); renderMessages(); });
+  actions.querySelector('.msg-edit-save').addEventListener('click', (e) => { e.stopPropagation(); saveEditedMessage(msgId, textarea.value); });
   textarea.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      cleanup();
-      renderMessages();
-    } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      saveEditedMessage(msgId, textarea.value);
-    }
+    if (e.key === 'Escape') { e.preventDefault(); cleanup(); renderMessages(); }
+    else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveEditedMessage(msgId, textarea.value); }
   });
 }
 
 function saveEditedMessage(msgId, newRawText) {
   const newText = Utils.expandDateVariables(newRawText).trim();
-  const msgs = state.messagesByRoom[state.currentRoomId] || [];
+  const msgs = state.messagesByRoom[state.currentRoomId];
   const msg = msgs.find(m => m.id === msgId);
   if (!msg) return;
-
-  if (!newText && (!msg.attachments || msg.attachments.length === 0)) {
-    Utils.toast('メモが空です。テキストを入力するか編集をキャンセルしてください');
-    return;
-  }
-
+  if (!newText && (!msg.attachments || msg.attachments.length === 0)) { Utils.toast('内容を入力してください'); return; }
   msg.text = newText;
   msg.editedAt = Date.now();
   persist();
   renderAll();
-  Utils.toast('メモを更新しました');
+  Utils.toast('更新しました');
 }
 
-// ---- ファイル添付 ----
 async function handleFilesSelected(fileList) {
   const files = Array.from(fileList);
   for (const file of files) {
     try {
       const isImage = file.type.startsWith('image/');
-      const att = {
-        id: Utils.uid(),
-        name: file.name,
-        type: file.type || 'application/octet-stream',
-        size: file.size,
-        isImage: isImage,
-        dataUrl: null
-      };
+      const att = { id: Utils.uid(), name: file.name, type: file.type || 'application/octet-stream', size: file.size, isImage: isImage, dataUrl: null };
       if (isImage) {
-        // 画像は Canvas でリサイズ・再圧縮してから保持する（localStorage容量節約: 長辺1280px, JPEG品質0.6）
         att.dataUrl = await Utils.compressImage(file, 1280, 0.6);
         att.type = 'image/jpeg';
         att.size = Utils.dataUrlByteSize(att.dataUrl);
@@ -1633,7 +1142,7 @@ function renderAttachPreview() {
   pendingAttachments.forEach(att => {
     const chip = document.createElement('div');
     chip.className = 'pending-file';
-    chip.innerHTML = `<span>${att.isImage ? '🖼' : '📄'} ${Utils.escapeHtml(att.name)}</span><button>×</button>`;
+    chip.innerHTML = `<span>${att.isImage ? '🖼' : '📄'} ${Utils.escapeHtml(att.name)}</span><button>✕</button>`;
     chip.querySelector('button').addEventListener('click', () => {
       pendingAttachments = pendingAttachments.filter(a => a.id !== att.id);
       renderAttachPreview();
@@ -1647,7 +1156,6 @@ function autoResizeTextarea(el) {
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-// ---- 選択モード ----
 function toggleSelectionMode() {
   selectionMode = !selectionMode;
   if (!selectionMode) selectedIds.clear();
@@ -1663,62 +1171,38 @@ function toggleSelect(msgId) {
 
 function renderSelectionBar() {
   const bar = document.getElementById('selection-bar');
-  if (selectionMode) {
-    bar.classList.add('active');
-    document.getElementById('selection-count').textContent = `${selectedIds.size}件選択中`;
-  } else {
-    bar.classList.remove('active');
-  }
+  if (selectionMode) { bar.classList.add('active'); document.getElementById('selection-count').textContent = selectedIds.size; }
+  else { bar.classList.remove('active'); }
 }
 
-/* ------------------------------------------------------------------ *
- * Markdownエクスポート
- * ------------------------------------------------------------------ */
 function buildMarkdown(messages, scopeLabel) {
   const dateFormat = getYamlSetting('display.dateFormat', 'YYYY-MM-DD');
-
   let md = '';
-  // YAML設定に入力された内容をそのままフロントマターとして先頭に付与する（日付/時刻トークンのみ変換）
   const rawYaml = (state.yamlText || '').trim();
   if (rawYaml) {
     const expandedYaml = Utils.expandFrontmatterDateTokens(rawYaml);
     md += `---\n${expandedYaml}\n---\n\n`;
   }
-
   let lastDate = null;
   messages.forEach(msg => {
     const dLabel = Utils.formatDate(msg.createdAt, dateFormat);
-    if (dLabel !== lastDate) {
-      md += `## ${dLabel}\n\n`;
-      lastDate = dLabel;
-    }
+    if (dLabel !== lastDate) { md += `\n## ${dLabel}\n\n`; lastDate = dLabel; }
     md += `**${Utils.formatTime(msg.createdAt)}**\n`;
     if (msg.text) md += `${msg.text}\n\n`;
-    (msg.attachments || []).forEach(att => {
-      md += `![[${att.name}]]\n\n`;
-    });
+    (msg.attachments || []).forEach(att => { md += `- 📎 ${att.name}\n`; });
   });
   return md;
 }
 
 function exportMessages(scope) {
   const allMsgs = state.messagesByRoom[state.currentRoomId] || [];
-  let target = [];
-  let label = '';
-  if (scope === 'room') {
-    target = allMsgs;
-    label = 'チャットルーム全体';
-  } else {
-    target = allMsgs.filter(m => selectedIds.has(m.id));
-    label = target.length > 1 ? `選択メッセージ ${target.length}件` : '選択メッセージ 1件';
-  }
-  if (target.length === 0) {
-    Utils.toast('エクスポート対象のメッセージがありません');
-    return;
-  }
+  let target;
+  let label;
+  if (scope === 'room') { target = allMsgs; label = 'ルーム全体'; }
+  else { target = allMsgs.filter(m => selectedIds.has(m.id)); label = `選択${target.length}件`; }
+  if (target.length === 0) { Utils.toast('対象のメッセージがありません'); return; }
   const md = buildMarkdown(target, label);
   document.getElementById('export-preview').value = md;
-  // モーダルを開くたびにボタン表示状態をリセットする（コピー前の初期状態に戻す）
   document.getElementById('export-copy-btn').style.display = '';
   document.getElementById('export-obsidian-btn').style.display = 'none';
   openModal('modal-export');
@@ -1736,16 +1220,9 @@ function downloadMarkdown(content, filename) {
   URL.revokeObjectURL(url);
 }
 
-/* ------------------------------------------------------------------ *
- * モーダル共通操作
- * ------------------------------------------------------------------ */
 function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-/* ------------------------------------------------------------------ *
- * ブックマーク機能
- * - 既定で6件まで表示。7件目以降は「もっと見る」で展開表示。
- * ------------------------------------------------------------------ */
 let bookmarkShowAll = false;
 let editingBookmarkId = null;
 
@@ -1755,11 +1232,7 @@ function renderBookmarks() {
   listEl.innerHTML = '';
   const bookmarks = state.bookmarks || [];
   const visible = bookmarkShowAll ? bookmarks : bookmarks.slice(0, 6);
-
-  if (bookmarks.length === 0) {
-    listEl.innerHTML = '<div style="color:#999;font-size:13px;text-align:center;padding:12px 0;">まだブックマークがありません</div>';
-  }
-
+  if (bookmarks.length === 0) listEl.innerHTML = '<div style="color:#999;font-size:13px;text-align:center;padding:12px 0;">ブックマークはまだありません</div>';
   visible.forEach(bm => {
     const item = document.createElement('div');
     item.className = 'bookmark-item';
@@ -1771,24 +1244,16 @@ function renderBookmarks() {
       <div class="bookmark-actions">
         <button class="bookmark-edit-btn" title="編集">✏️</button>
         <button class="bookmark-del-btn" title="削除">🗑</button>
-      </div>
-    `;
-    item.querySelector('.bookmark-info').addEventListener('click', () => {
-      window.open(bm.url, '_blank', 'noopener');
-    });
+      </div>`;
+    item.querySelector('.bookmark-info').addEventListener('click', () => window.open(bm.url, '_blank', 'noopener'));
     item.querySelector('.bookmark-edit-btn').addEventListener('click', () => openBookmarkEdit(bm.id));
     item.querySelector('.bookmark-del-btn').addEventListener('click', () => deleteBookmark(bm.id));
     listEl.appendChild(item);
   });
-
   moreBtn.style.display = (!bookmarkShowAll && bookmarks.length > 6) ? 'block' : 'none';
-
   const addBtn = document.getElementById('bookmark-add-btn');
-  if (bookmarks.length >= 6 && !bookmarkShowAll) {
-    addBtn.style.display = bookmarks.length > 6 ? 'none' : '';
-  } else {
-    addBtn.style.display = '';
-  }
+  if (bookmarks.length > 6 && !bookmarkShowAll) addBtn.style.display = bookmarks.length > 6 ? 'none' : '';
+  else addBtn.style.display = '';
 }
 
 function openBookmarkEdit(id) {
@@ -1803,12 +1268,8 @@ function openBookmarkEdit(id) {
 function saveBookmark() {
   const title = document.getElementById('bookmark-input-title').value.trim();
   const url = document.getElementById('bookmark-input-url').value.trim();
-  if (!url) {
-    Utils.toast('URLを入力してください');
-    return;
-  }
+  if (!url) { Utils.toast('URLを入力してください'); return; }
   if (!Array.isArray(state.bookmarks)) state.bookmarks = [];
-
   if (editingBookmarkId) {
     const bm = state.bookmarks.find(b => b.id === editingBookmarkId);
     if (bm) { bm.title = title; bm.url = url; }
@@ -1828,9 +1289,6 @@ function deleteBookmark(id) {
   renderBookmarks();
 }
 
-/* ------------------------------------------------------------------ *
- * 6. 初期化 & イベント登録
- * ------------------------------------------------------------------ */
 function initEventListeners() {
   document.getElementById('new-room-btn').addEventListener('click', () => {
     document.getElementById('new-room-name').value = '';
@@ -1851,147 +1309,93 @@ function initEventListeners() {
     closeModal('modal-rename-room');
   });
 
-  document.querySelectorAll('.close-x, [data-close]').forEach(btn => {
-    btn.addEventListener('click', () => closeModal(btn.dataset.close));
-  });
-  document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) overlay.classList.remove('active');
-    });
-  });
+  document.querySelectorAll('.close-x, [data-close]').forEach(btn => { btn.addEventListener('click', () => closeModal(btn.dataset.close)); });
+  document.querySelectorAll('.modal-overlay').forEach(overlay => { overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); }); });
 
-  // メッセージ入力
   const input = document.getElementById('msg-input');
   input.addEventListener('input', () => autoResizeTextarea(input));
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
   document.getElementById('send-btn').addEventListener('click', sendMessage);
 
-  // ツールバー(アコーディオン)の開閉
   document.getElementById('toolbar-toggle-btn').addEventListener('click', () => {
     const toolbar = document.getElementById('input-toolbar');
     const toggleBtn = document.getElementById('toolbar-toggle-btn');
     const isOpen = toolbar.classList.toggle('open');
     toggleBtn.classList.toggle('open', isOpen);
   });
+  document.getElementById('attach-btn').addEventListener('click', () => document.getElementById('file-input').click());
 
-  // ファイル添付
-  document.getElementById('attach-btn').addEventListener('click', () => {
-    document.getElementById('file-input').click();
-  });
-
-  // Todoモード: 入力欄の文頭に「- [ ] 」を付与（再度押すと解除）
   document.getElementById('todo-btn').addEventListener('click', () => {
-    const input = document.getElementById('msg-input');
+    const input2 = document.getElementById('msg-input');
     const todoBtn = document.getElementById('todo-btn');
     const prefix = '- [ ] ';
-    if (input.value.startsWith(prefix)) {
-      input.value = input.value.slice(prefix.length);
-      todoBtn.classList.remove('active');
-    } else {
-      input.value = prefix + input.value;
-      todoBtn.classList.add('active');
-    }
-    input.focus();
-    input.setSelectionRange(input.value.length, input.value.length);
-    autoResizeTextarea(input);
-  });
-  document.getElementById('file-input').addEventListener('change', (e) => {
-    handleFilesSelected(e.target.files);
-    e.target.value = '';
+    if (input2.value.startsWith(prefix)) { input2.value = input2.value.slice(prefix.length); todoBtn.classList.remove('active'); }
+    else { input2.value = prefix + input2.value; todoBtn.classList.add('active'); }
+    input2.focus();
+    input2.setSelectionRange(input2.value.length, input2.value.length);
+    autoResizeTextarea(input2);
   });
 
-  // ブックマーク
-  document.getElementById('bookmark-btn').addEventListener('click', () => {
-    bookmarkShowAll = false;
-    renderBookmarks();
-    openModal('modal-bookmark');
-  });
+  document.getElementById('file-input').addEventListener('change', (e) => { handleFilesSelected(e.target.files); e.target.value = ''; });
+
+  document.getElementById('bookmark-btn').addEventListener('click', () => { bookmarkShowAll = false; renderBookmarks(); openModal('modal-bookmark'); });
   document.getElementById('bookmark-add-btn').addEventListener('click', () => openBookmarkEdit(null));
-  document.getElementById('bookmark-more-btn').addEventListener('click', () => {
-    bookmarkShowAll = true;
-    renderBookmarks();
-  });
+  document.getElementById('bookmark-more-btn').addEventListener('click', () => { bookmarkShowAll = true; renderBookmarks(); });
   document.getElementById('confirm-bookmark-save').addEventListener('click', saveBookmark);
 
-  // メッセージの別ルーム移動
   document.getElementById('confirm-move-message').addEventListener('click', confirmMoveMessage);
 
-  // 選択モード
   document.getElementById('select-mode-btn').addEventListener('click', toggleSelectionMode);
-  document.getElementById('sel-cancel-btn').addEventListener('click', () => {
-    selectionMode = false;
-    selectedIds.clear();
-    renderAll();
-  });
+  document.getElementById('sel-cancel-btn').addEventListener('click', () => { selectionMode = false; selectedIds.clear(); renderAll(); });
   document.getElementById('sel-export-btn').addEventListener('click', () => exportMessages('selection'));
   document.getElementById('sel-move-btn').addEventListener('click', openMoveSelectedMessages);
+  document.getElementById('sel-mark-btn').addEventListener('click', markSelectedMessages);
   document.getElementById('sel-delete-btn').addEventListener('click', deleteSelectedMessages);
-  document.getElementById('export-room-btn').addEventListener('click', () => exportMessages('room'));
 
-  // 一括削除
+  document.getElementById('export-room-btn').addEventListener('click', () => exportMessages('room'));
   document.getElementById('bulk-delete-btn').addEventListener('click', () => openModal('modal-bulk-delete'));
-  document.getElementById('bulk-delete-all-btn').addEventListener('click', () => {
-    closeModal('modal-bulk-delete');
-    bulkDeleteAllMessages();
-  });
-  document.getElementById('bulk-delete-before-today-btn').addEventListener('click', () => {
-    closeModal('modal-bulk-delete');
-    bulkDeleteBeforeToday();
-  });
+  document.getElementById('bulk-delete-all-btn').addEventListener('click', () => { closeModal('modal-bulk-delete'); bulkDeleteAllMessages(); });
+  document.getElementById('bulk-delete-before-today-btn').addEventListener('click', () => { closeModal('modal-bulk-delete'); bulkDeleteBeforeToday(); });
+
+  document.getElementById('mark-all-btn').addEventListener('click', () => openModal('modal-mark-all'));
+  document.getElementById('mark-all-on-btn').addEventListener('click', () => markAllMessages(true));
+  document.getElementById('mark-all-off-btn').addEventListener('click', () => markAllMessages(false));
 
   document.getElementById('export-copy-btn').addEventListener('click', () => {
     const ta = document.getElementById('export-preview');
     ta.select();
     document.execCommand('copy');
     Utils.toast('コピーしました');
-    // コピー完了後、ボタンを「Obsidianに追加」と入れ替えて表示する
-    document.getElementById('export-copy-btn').style.display = 'none';
-    document.getElementById('export-obsidian-btn').style.display = '';
   });
-  document.getElementById('export-obsidian-btn').addEventListener('click', () => {
-    window.location.href = 'https://tinyurl.com/y63jwarm';
-  });
+  document.getElementById('export-obsidian-btn').style.display = 'none';
   document.getElementById('export-download-btn').addEventListener('click', () => {
     const room = state.rooms.find(r => r.id === state.currentRoomId);
-    const filename = `${room ? room.name : 'memo'}_${Utils.formatDate(Date.now(),'YYYY-MM-DD')}.md`;
+    const filename = `${room ? room.name : 'メモ'}_${Utils.formatDate(Date.now(), 'YYYYMMDD')}.md`;
     downloadMarkdown(document.getElementById('export-preview').value, filename);
   });
 
-  // YAML設定
+  document.getElementById('menu-btn').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
   document.getElementById('open-yaml-btn').addEventListener('click', () => {
     document.getElementById('yaml-textarea').value = state.yamlText;
-    document.getElementById('yaml-error').classList.remove('show');
     openModal('modal-yaml');
   });
+  document.getElementById('yaml-reset-btn').addEventListener('click', () => { document.getElementById('yaml-textarea').value = DEFAULT_YAML; });
   document.getElementById('yaml-save-btn').addEventListener('click', () => {
     const text = document.getElementById('yaml-textarea').value;
-    const backup = state.yamlText;
     state.yamlText = text;
-    const ok = applyYamlConfig();
-    if (ok) {
+    if (applyYamlConfig()) {
       persist();
       renderAll();
-      Utils.toast('YAML設定を保存しました');
       closeModal('modal-yaml');
-    } else {
-      // エラー時は state を元に戻し、アプリを壊さない
-      state.yamlText = backup;
+      Utils.toast('YAML設定を保存しました');
     }
   });
-  document.getElementById('yaml-reset-btn').addEventListener('click', () => {
-    document.getElementById('yaml-textarea').value = DEFAULT_YAML;
-  });
 
-  // 同期設定
   document.getElementById('open-sync-btn').addEventListener('click', () => {
-    document.getElementById('sync-enabled-checkbox').checked = !!Sync.config.enabled;
-    document.getElementById('sync-url-input').value = Sync.config.url || '';
-    document.getElementById('sync-token-input').value = Sync.config.token || '';
+    document.getElementById('sync-enabled-checkbox').checked = Sync.config.enabled;
+    document.getElementById('sync-url-input').value = Sync.config.url;
+    document.getElementById('sync-token-input').value = Sync.config.token;
     openModal('modal-sync');
   });
   document.getElementById('sync-save-btn').addEventListener('click', () => {
@@ -2000,11 +1404,7 @@ function initEventListeners() {
     Sync.config.token = document.getElementById('sync-token-input').value.trim();
     Sync.saveConfig();
     Sync.startPolling();
-    if (Sync.config.enabled) {
-      Sync.download();
-    } else {
-      Sync.setStatus('同期は無効です');
-    }
+    if (Sync.config.enabled) Sync.download();
     closeModal('modal-sync');
     Utils.toast('同期設定を保存しました');
   });
@@ -2012,44 +1412,19 @@ function initEventListeners() {
     const url = document.getElementById('sync-url-input').value.trim();
     const token = document.getElementById('sync-token-input').value.trim();
     if (!url) { Utils.toast('URLを入力してください'); return; }
-    Utils.toast('接続確認中…');
     try {
       const res = await fetch(url + '?token=' + encodeURIComponent(token));
       const json = await res.json();
-      if (json.error) {
-        Utils.toast('エラー: ' + json.error);
-      } else {
-        Utils.toast('接続に成功しました');
-      }
-    } catch (e) {
-      Utils.toast('接続に失敗しました');
-    }
-  });
-
-  // モバイル用サイドバー開閉
-  document.getElementById('menu-btn').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('open');
+      Utils.toast(json.error ? ('エラー: ' + json.error) : '接続に成功しました');
+    } catch (e) { Utils.toast('接続に失敗しました'); }
   });
 }
 
-function init() {
-  applyYamlConfig();
-  initEventListeners();
-  renderAll();
-  autoResizeTextarea(document.getElementById('msg-input'));
-  Sync.init();
-}
-
-document.addEventListener('DOMContentLoaded', init);
-
-// ---- PWA: Service Worker登録 ----
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => {
-      console.warn('Service Worker登録に失敗しました', err);
-    });
-  });
-}
+ensureIntegrity();
+applyYamlConfig();
+initEventListeners();
+renderAll();
+Sync.init();
 </script>
 </body>
 </html>
