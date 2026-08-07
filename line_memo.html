@@ -192,7 +192,7 @@ body{background:#dcdcdc;}
     </div>
     <div id="chat-actions">
       <button id="bookmark-btn" title="ブックマーク">🔖</button>
-      <button id="select-mode-btn" title="選択モード">☑</button>
+      <button id="select-mode-btn" title="選択モード">✅</button>
       <button id="export-room-btn" title="ルームをエクスポート">📤</button>
       <button id="mark-all-btn" title="送信マークを一括設定">●</button>
       <button id="bulk-delete-btn" title="一括削除">🗑</button>
@@ -214,7 +214,7 @@ body{background:#dcdcdc;}
 
   <div id="attach-preview"></div>
   <div id="input-toolbar">
-    <div id="var-hint">日付変数: YYYY-MM-DD / YYYYMMDD / HHmm が使えます</div>
+    <div id="var-hint">日付変数: YYYY-MM-DD / YYYY/MM/DD / YYYYMMDD / HHmm / HH:mm が使えます</div>
     <div id="input-toolbar-buttons">
       <button id="attach-btn" title="ファイル添付">📎 添付</button>
       <input type="file" id="file-input" multiple style="display:none;">
@@ -327,7 +327,7 @@ body{background:#dcdcdc;}
       <textarea id="export-preview" readonly></textarea>
     </div>
     <div class="modal-footer">
-      <button id="export-obsidian-btn" class="primary" style="display:none;">Obsidianで開く</button>
+      <button id="export-obsidian-btn" class="primary" style="display:none;">Obsidianに追加</button>
       <button id="export-copy-btn">コピー</button>
       <button class="primary" id="export-download-btn">.mdダウンロード</button>
     </div>
@@ -431,18 +431,29 @@ const Utils = {
     const d = new Date();
     const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
     const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
-    return text.replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`).replace(/YYYYMMDD/g, `${y}${m}${day}`).replace(/HHmm/g, `${hh}${mm}`);
+    return text
+      .replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`)
+      .replace(/YYYY\/MM\/DD/g, `${y}/${m}/${day}`)
+      .replace(/YYYYMMDD/g, `${y}${m}${day}`)
+      .replace(/HH:mm/g, `${hh}:${mm}`)
+      .replace(/HHmm/g, `${hh}${mm}`);
   },
   expandFrontmatterDateTokens(text) {
     const d = new Date();
     const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
     const hh = Utils.pad(d.getHours()), mm = Utils.pad(d.getMinutes());
-    return text.replace(/YYYYMMDD/g, `${y}${m}${day}`).replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`).replace(/HHmm/g, `${hh}${mm}`);
+    return text
+      .replace(/YYYYMMDD/g, `${y}${m}${day}`)
+      .replace(/YYYY-MM-DD/g, `${y}-${m}-${day}`)
+      .replace(/YYYY\/MM\/DD/g, `${y}/${m}/${day}`)
+      .replace(/HH:mm/g, `${hh}:${mm}`)
+      .replace(/HHmm/g, `${hh}${mm}`);
   },
   formatDate(timestamp, pattern) {
     const d = new Date(timestamp);
     const y = d.getFullYear(), m = Utils.pad(d.getMonth() + 1), day = Utils.pad(d.getDate());
     if (pattern === 'YYYYMMDD') return `${y}${m}${day}`;
+    if (pattern === 'YYYY/MM/DD') return `${y}/${m}/${day}`;
     return `${y}-${m}-${day}`;
   },
   formatTime(timestamp) {
@@ -554,7 +565,7 @@ function getYamlSetting(path, fallback) {
 const DEFAULT_YAML = `display:
   showTimestamp: true
   dateFormat: "YYYY-MM-DD"
-  timeFormat: "HHmm"
+  timeFormat: "HH:mm"
   bubbleStyle: rounded
 export:
   includeRoomName: true
@@ -769,7 +780,6 @@ function renderMessageRow(msg, showTimestamp) {
   const bubbleWrap = document.createElement('div');
   bubbleWrap.className = 'msg-bubble-wrap';
 
-  // 吹き出し本体とマークをまとめるアンカー（マークはposition:absoluteで完全に外部化し、吹き出しの幅・位置に影響しないようにする）
   const bubbleAnchor = document.createElement('div');
   bubbleAnchor.className = 'msg-bubble-anchor';
 
@@ -1366,8 +1376,12 @@ function initEventListeners() {
     ta.select();
     document.execCommand('copy');
     Utils.toast('コピーしました');
+    document.getElementById('export-copy-btn').style.display = 'none';
+    document.getElementById('export-obsidian-btn').style.display = '';
   });
-  document.getElementById('export-obsidian-btn').style.display = 'none';
+  document.getElementById('export-obsidian-btn').addEventListener('click', () => {
+    window.location.href = 'https://tinyurl.com/y63jwarm';
+  });
   document.getElementById('export-download-btn').addEventListener('click', () => {
     const room = state.rooms.find(r => r.id === state.currentRoomId);
     const filename = `${room ? room.name : 'メモ'}_${Utils.formatDate(Date.now(), 'YYYYMMDD')}.md`;
