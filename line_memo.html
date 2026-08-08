@@ -1216,6 +1216,15 @@ function exportMessages(scope) {
   document.getElementById('export-copy-btn').style.display = '';
   document.getElementById('export-obsidian-btn').style.display = 'none';
   openModal('modal-export');
+
+  // エクスポートした時点で、対象メッセージに自動で送信マークを付与する
+  const newlyMarked = target.filter(m => !m.sent);
+  if (newlyMarked.length > 0) {
+    newlyMarked.forEach(m => { m.sent = true; });
+    persist();
+    renderAll();
+    Utils.toast(`${newlyMarked.length}件に送信マークを付けました`);
+  }
 }
 
 function downloadMarkdown(content, filename) {
