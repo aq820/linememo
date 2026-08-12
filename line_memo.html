@@ -1199,7 +1199,14 @@ function buildMarkdown(messages, scopeLabel) {
     if (dLabel !== lastDate) { md += `\n## ${dLabel}\n\n`; lastDate = dLabel; }
     md += `**${Utils.formatTime(msg.createdAt)}**\n`;
     if (msg.text) md += `${msg.text}\n\n`;
-    (msg.attachments || []).forEach(att => { md += `- 📎 ${att.name}\n`; });
+    (msg.attachments || []).forEach(att => {
+      if (att.isImage) {
+        md += `![[${att.name}]]\n`;
+      } else {
+        md += `- 📎 ${att.name}\n`;
+      }
+    });
+    md += '\n';
   });
   return md;
 }
@@ -1217,7 +1224,6 @@ function exportMessages(scope) {
   document.getElementById('export-obsidian-btn').style.display = 'none';
   openModal('modal-export');
 
-  // エクスポートした時点で、対象メッセージに自動で送信マークを付与する
   const newlyMarked = target.filter(m => !m.sent);
   if (newlyMarked.length > 0) {
     newlyMarked.forEach(m => { m.sent = true; });
