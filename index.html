@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notion Chat Memo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="side-head">
+      <h1>📝 Chat Memo</h1>
+    </div>
+    <button id="addRoomBtn" class="btn primary block">＋ 新しいルーム</button>
+    <ul id="roomList"></ul>
+    <button id="openSettingsBtn" class="btn block">⚙️ 共通設定</button>
+  </aside>
+  <div id="backdrop"></div>
+
+  <main id="main">
+    <header id="roomHeader">
+      <button id="menuBtn" class="icon-btn" title="メニュー">☰</button>
+      <div class="room-title">
+        <div id="roomName">ルーム未選択</div>
+        <div id="roomDb" class="sub"></div>
+      </div>
+      <button id="roomSettingsBtn" class="icon-btn" title="ルーム設定">⚙️</button>
+    </header>
+
+    <section id="messages"></section>
+
+    <form id="composer" autocomplete="off">
+      <div id="pendingFiles"></div>
+      <div class="composer-row">
+        <label class="icon-btn" title="ファイルを添付">📎
+          <input id="fileInput" type="file" multiple hidden>
+        </label>
+        <textarea id="input" rows="1" placeholder="メッセージ（1行目がタイトル）  Ctrl/⌘+Enterで送信"></textarea>
+        <button id="sendBtn" class="btn primary" type="submit">送信</button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<!-- 共通設定 -->
+<dialog id="settingsDialog">
+  <form method="dialog" class="dlg">
+    <h2>共通設定</h2>
+    <p class="note">トークンとデータベースIDはこのブラウザ（localStorage）にのみ保存されます。</p>
+
+    <label class="field">Notion インテグレーショントークン
+      <div class="inline">
+        <input id="tokenInput" type="password" placeholder="ntn_... / secret_...">
+        <button type="button" id="toggleToken" class="btn small">表示</button>
+      </div>
+    </label>
+
+    <label class="field">API中継URL（CORSプロキシ）
+      <input id="proxyInput" type="url" placeholder="https://notion-proxy.xxxx.workers.dev">
+      <span class="hint">Notion APIはブラウザから直接呼べないため、同梱の worker.js 等の中継が必要です（中継は保存しません）。</span>
+    </label>
+
+    <div class="field">
+      <div class="field-head">書き込み先データベース <span class="hint">◉ = デフォルト</span></div>
+      <div id="dbList"></div>
+      <button type="button" id="addDbBtn" class="btn small">＋ データベースを追加</button>
+    </div>
+
+    <div class="field">
+      <div class="field-head">バックアップ</div>
+      <div class="inline">
+        <button type="button" id="exportBtn" class="btn small">設定を書き出し</button>
+        <button type="button" id="importBtn" class="btn small">設定を読み込み</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+      <span class="hint">書き出しファイルにはトークンが含まれます。取り扱い注意。</span>
+    </div>
+
+    <div class="dlg-actions">
+      <button value="cancel" class="btn">キャンセル</button>
+      <button id="saveSettingsBtn" value="save" class="btn primary">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ルーム設定 -->
+<dialog id="roomDialog">
+  <form method="dialog" class="dlg">
+    <h2>ルーム設定</h2>
+    <label class="field">ルーム名
+      <input id="roomNameInput" type="text" placeholder="例：仕事メモ">
+    </label>
+
+    <label class="field">使用するデータベース
+      <select id="roomDbSelect"></select>
+    </label>
+
+    <label class="check"><input id="propsEnabled" type="checkbox"> プロパティにも書き込む</label>
+
+    <div id="propsArea" class="field">
+      <div class="field-head">
+        書き込むプロパティ
+        <button type="button" id="loadPropsBtn" class="btn small">プロパティ一覧を取得</button>
+      </div>
+      <div id="propList"></div>
+      <datalist id="propNames"></datalist>
+      <button type="button" id="addPropBtn" class="btn small">＋ プロパティを追加</button>
+      <span class="hint">
+        対応：テキスト／数値／セレクト／マルチセレクト（カンマ区切り）／ステータス／日付／チェックボックス（true・false）／URL／メール／電話／リレーション（ページID カンマ区切り）。<br>
+        固定値の中では <code>{{today}}</code>（今日の日付）・<code>{{now}}</code>（現在日時）も使えます。タイトルプロパティは本文1行目が入るため指定不可。
+      </span>
+    </div>
+
+    <div class="dlg-actions">
+      <button type="button" id="clearHistoryBtn" class="btn danger-text">履歴を消去</button>
+      <button type="button" id="deleteRoomBtn" class="btn danger-text">ルーム削除</button>
+      <span class="spacer"></span>
+      <button value="cancel" class="btn">キャンセル</button>
+      <button id="saveRoomBtn" value="save" class="btn primary">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
