@@ -3,8 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="チャットからNotionにメモを保存するアプリ">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chat Memo">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Notion Chat Memo</title>
-<link rel="stylesheet" href="style.css">
+<link rel="icon" href="./icons/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32x32.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <div id="app">
@@ -123,6 +133,15 @@
 </dialog>
 
 <div id="toast"></div>
-<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', () => {
+      const scope = new URL('./', document.baseURI).pathname;
+      navigator.serviceWorker.register(new URL('./sw.js', document.baseURI), { scope })
+        .catch(error => console.warn('PWA offline support could not be registered:', error));
+    });
+  }
+</script>
+<script src="./app.js"></script>
 </body>
 </html>

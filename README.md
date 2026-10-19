@@ -12,6 +12,8 @@ GitHub Pages（静的ホスティング）で動作します。
 | ファイル | 内容 |
 |---|---|
 | index.html / style.css / app.js | アプリ本体（GitHub Pagesに置く） |
+| manifest.webmanifest / sw.js | PWA設定・オフライン用アプリシェル |
+| icons/ | ファビコン・PWA・ホーム画面用アイコン |
 | worker.js | Notion API中継（Cloudflare Workers用 CORSプロキシ） |
 
 ## なぜ中継が必要？
@@ -31,8 +33,9 @@ Notion APIはブラウザからの直接呼び出し（CORS）を許可してい
 4. 発行されたURL（例 `https://notion-proxy.xxx.workers.dev`）を控える
 
 ### 3. GitHub Pages
-1. リポジトリに `index.html` `style.css` `app.js` をアップロード
+1. リポジトリに `index.html` `style.css` `app.js` `manifest.webmanifest` `sw.js` と `icons/` フォルダをアップロード
 2. Settings → Pages → Branch: `main` / `(root)` で公開
+3. HTTPSで公開後、ブラウザーで開くとPWAのアプリシェルが登録されます。Notionへの送信にはインターネット接続が必要です。
 
 ### 4. アプリの初期設定
 1. 「⚙️ 共通設定」でトークン、API中継URL、データベース（表示名＋IDまたはURL）を登録。◉でデフォルト指定、「確認」で接続テスト
@@ -51,3 +54,10 @@ Notion APIはブラウザからの直接呼び出し（CORS）を許可してい
 ## 注意
 - トークンはlocalStorageに平文保存されます。共有PCでは使わないでください。
 - 添付の上限はNotionのプランに依存（無料プランは1ファイル5MB）。20MB超は自動で分割アップロードします。
+
+
+## PWAとしてインストール
+- **iPhone / iPad**：Safariでアプリを開き、「共有」→「ホーム画面に追加」。
+- **Android**：Chromeでアプリを開き、メニューの「アプリをインストール」または「ホーム画面に追加」。
+- **PC**：Chrome / Edgeでアプリを開き、アドレスバー付近のインストールアイコン、またはブラウザーのメニューからインストール。
+- 初回アクセス後はアプリ画面（HTML / CSS / JavaScript / アイコン）をオフラインでも開けます。Notionへの保存や添付アップロードはオンライン時のみ利用できます。Notionのページ内容やトークンはService Workerのキャッシュ対象にしていません。
